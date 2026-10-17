@@ -1,0 +1,25 @@
+{
+  "provenance": "Recorded from live YouCam runs on 15 Oct 2026 using sample photos from YouCam’s own documentation, not your hair. Length used a front photo; density used a top-down photo of a different person.",
+  "recordedAt": "2026-10-15T12:10:00Z",
+  "setup": "loose",
+  "notes": {
+    "type": "YouCam rejected the sample’s side photos: they are full profiles, and it needs a turn of about 45°.",
+    "frizz": "YouCam rejected the sample’s side photos: they are full profiles, and it needs a turn of about 45°."
+  },
+  "profile": {
+    "type": {
+      "status": "failed",
+      "errorCode": "error_face_angle_invalid",
+      "message": "The head angle wasn’t right: front within 10°, sides turned more than 15°."
+    },
+    "frizz": {
+      "status": "failed",
+      "errorCode": "error_face_angle_invalid",
+      "message": "The head angle wasn’t right: front within 10°, sides turned more than 15°."
+    },
+    "length": { "status": "measured", "value": { "term": "above chest or longer", "index": 6, "lowerBoundOnly": true } },
+    "density": { "status": "measured", "value": { "term": "Low Density", "level": 2, "score": 0.92 } },
+    "measuredAt": "2026-10-15T12:10:00Z",
+    "notes": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "source": "YouCam docs sample photo (tests/out/prep_sample_original_1024.jpg) and its LIVE YouCam Hair Color #00FF00 @100 render recorded 2026-10-15 (tests/out/20261015-123617_level_mask_0.jpg), both downscaled to 256 px with Pillow. Raw RGB, gzip.",
+  "width": 192,
+  "height": 256,
+  "python": {
+    "hairPixels": 20581,
+    "medianLab": [
+      58.424,
+      7.744,
+      16.271
+    ],
+    "note": "tests/boxtruth.py measure_from_files maths: threshold 40, no erosion, no calibration"
+  }
+}

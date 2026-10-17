@@ -1,0 +1,842 @@
+{
+  "catalogueVersion": "dev-2026-10-16",
+  "status": "illustrative",
+  "notice": "Illustrative development shades, not real products. Swatches show a modelled target colour, not any brand's formula or box colour.",
+  "colourModel": {
+    "description": "targetHex = Lab(L*, a*, b*) converted to sRGB, where L* = 12 + 7 × (level − 1) and a*/b* come from the tone: neutral (4, 16), ash (1, 9), golden (6, 28), copper (20, 30), pearl (6, 2), mocha (5, 10), red (32, 22), mahogany (24, 8). Tone chroma was raised from the tests/boxtruth.py values after live Hair Color renders showed the original ash as grey.",
+    "status": "uncalibrated",
+    "sourceIds": [
+      "boxtruth-model"
+    ]
+  },
+  "sources": {
+    "boxtruth-model": {
+      "title": "Box Truth tone model in tests/boxtruth.py (uncalibrated level bands, to be fitted against real photos)",
+      "url": null
+    },
+    "level-numbering": {
+      "title": "Common level.tone numbering on box dyes (e.g. 7.1). Tone digits differ between brands; not verified per brand.",
+      "url": null
+    },
+    "garnier-lift": {
+      "title": "Garnier USA, New to Hair Color: permanent colour lifts 2–3 levels; another box won't lighten dyed hair without bleach",
+      "url": "https://www.garnierusa.com/en/hair-color-needs/new-to-hair-color"
+    },
+    "theshade-dyed": {
+      "title": "The Shade help centre: hair colour can't lighten hair that has already been permanently coloured",
+      "url": "https://the-shade.helpscoutdocs.com/article/52-how-light-can-i-colour-my-hair"
+    },
+    "underlying-pigment": {
+      "title": "Open Exam Prep, colour formulation and correction: lifting exposes red → orange → gold → yellow",
+      "url": "https://open-exam-prep.com/study-guides/tx-barber/haircoloring/color-formulation-correction"
+    },
+    "ash-green": {
+      "title": "CurlCentric, Why is my hair turning green: ash pigments on yellow or porous hair can turn green",
+      "url": "https://www.curlcentric.com/why-is-my-hair-turning-green-when-i-dye-it/"
+    },
+    "revlon-dark": {
+      "title": "Revlon Professional: previously dyed hair can take twice as long to lighten per level",
+      "url": "https://cdn.revlonprofessional.com/blog/correct-black-box-dyed-hair"
+    },
+    "swatch-approx": {
+      "title": "Clairol (via Happi): colour swatches are electronic approximations; results on hair vary",
+      "url": "https://www.happi.com/contents/view_breaking-news/2016-11-14/clairol-creates-new-shade-selection-app/"
+    }
+  },
+  "limitations": {
+    "swatch-approximation": {
+      "text": "The swatch is an approximation. Real results depend on your starting colour and hair condition.",
+      "sourceIds": [
+        "swatch-approx"
+      ]
+    },
+    "lift-limit": {
+      "text": "Box dye lifts natural hair about 2–3 levels at most, so starting much darker it will stop short.",
+      "sourceIds": [
+        "garnier-lift"
+      ]
+    },
+    "dye-cant-lift-dye": {
+      "text": "It can't lighten hair that's already been dyed. Only bleach can.",
+      "sourceIds": [
+        "garnier-lift",
+        "theshade-dyed"
+      ]
+    },
+    "warm-exposure": {
+      "text": "Lightening exposes warm pigment (red, orange, gold, yellow), so results often look warmer than the box.",
+      "sourceIds": [
+        "underlying-pigment"
+      ]
+    },
+    "ash-green": {
+      "text": "Ash tones can turn green on yellow, porous or previously lightened hair.",
+      "sourceIds": [
+        "ash-green"
+      ]
+    },
+    "dark-hard-to-undo": {
+      "text": "Going this dark is reliable but hard to undo: dyed hair is much slower to lighten later.",
+      "sourceIds": [
+        "revlon-dark"
+      ]
+    }
+  },
+  "groups": [
+    {
+      "id": "black-dark-brown",
+      "label": "Black & dark brown"
+    },
+    {
+      "id": "medium-light-brown",
+      "label": "Medium & light brown"
+    },
+    {
+      "id": "red-plum",
+      "label": "Red, burgundy & plum"
+    },
+    {
+      "id": "copper-warm",
+      "label": "Copper & warm brunette"
+    },
+    {
+      "id": "blonde",
+      "label": "Dark & light blonde"
+    },
+    {
+      "id": "ash-golden",
+      "label": "Ash & golden"
+    },
+    {
+      "id": "pearl-platinum",
+      "label": "Pearl & platinum"
+    }
+  ],
+  "shades": [
+    {
+      "id": "dev-1-0-black",
+      "code": "1",
+      "name": "Natural black",
+      "level": 1,
+      "tone": "neutral",
+      "group": "black-dark-brown",
+      "targetHex": "#2B1D05",
+      "swatchHex": "#2B1D05",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-1-1-blue-black",
+      "code": "1.1",
+      "name": "Blue black",
+      "level": 1,
+      "tone": "ash",
+      "group": "black-dark-brown",
+      "targetHex": "#251F13",
+      "swatchHex": "#251F13",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-2-0-darkest-brown",
+      "code": "2",
+      "name": "Darkest brown",
+      "level": 2,
+      "tone": "neutral",
+      "group": "black-dark-brown",
+      "targetHex": "#3B2B17",
+      "swatchHex": "#3B2B17",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-3-0-dark-brown",
+      "code": "3",
+      "name": "Dark brown",
+      "level": 3,
+      "tone": "neutral",
+      "group": "black-dark-brown",
+      "targetHex": "#4B3B25",
+      "swatchHex": "#4B3B25",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-0-medium-brown",
+      "code": "4",
+      "name": "Medium brown",
+      "level": 4,
+      "tone": "neutral",
+      "group": "medium-light-brown",
+      "targetHex": "#5C4B35",
+      "swatchHex": "#5C4B35",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-1-ash-brown",
+      "code": "4.1",
+      "name": "Ash brown",
+      "level": 4,
+      "tone": "ash",
+      "group": "medium-light-brown",
+      "targetHex": "#554D40",
+      "swatchHex": "#554D40",
+      "limitationIds": [
+        "swatch-approximation",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-8-mocha-brown",
+      "code": "4.8",
+      "name": "Mocha brown",
+      "level": 4,
+      "tone": "mocha",
+      "group": "medium-light-brown",
+      "targetHex": "#5B4A3E",
+      "swatchHex": "#5B4A3E",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-0-light-brown",
+      "code": "5",
+      "name": "Light brown",
+      "level": 5,
+      "tone": "neutral",
+      "group": "medium-light-brown",
+      "targetHex": "#6E5B44",
+      "swatchHex": "#6E5B44",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-1-ash-light-brown",
+      "code": "5.1",
+      "name": "Ash light brown",
+      "level": 5,
+      "tone": "ash",
+      "group": "medium-light-brown",
+      "targetHex": "#665D50",
+      "swatchHex": "#665D50",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-8-light-mocha-brown",
+      "code": "5.8",
+      "name": "Light mocha brown",
+      "level": 5,
+      "tone": "mocha",
+      "group": "medium-light-brown",
+      "targetHex": "#6D5B4E",
+      "swatchHex": "#6D5B4E",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-3-2-dark-plum",
+      "code": "3.2",
+      "name": "Dark plum",
+      "level": 3,
+      "tone": "violet",
+      "group": "red-plum",
+      "targetHex": "#483A3B",
+      "swatchHex": "#483A3B",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-3-5-dark-burgundy",
+      "code": "3.5",
+      "name": "Dark burgundy",
+      "level": 3,
+      "tone": "mahogany",
+      "group": "red-plum",
+      "targetHex": "#622E32",
+      "swatchHex": "#622E32",
+      "limitationIds": [
+        "swatch-approximation",
+        "dark-hard-to-undo"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-2-plum-brown",
+      "code": "4.2",
+      "name": "Plum brown",
+      "level": 4,
+      "tone": "violet",
+      "group": "red-plum",
+      "targetHex": "#584A4B",
+      "swatchHex": "#584A4B",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-5-mahogany-brown",
+      "code": "4.5",
+      "name": "Mahogany brown",
+      "level": 4,
+      "tone": "mahogany",
+      "group": "red-plum",
+      "targetHex": "#743E42",
+      "swatchHex": "#743E42",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-6-red-brown",
+      "code": "4.6",
+      "name": "Red brown",
+      "level": 4,
+      "tone": "red",
+      "group": "red-plum",
+      "targetHex": "#82362D",
+      "swatchHex": "#82362D",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-5-light-mahogany-brown",
+      "code": "5.5",
+      "name": "Light mahogany brown",
+      "level": 5,
+      "tone": "mahogany",
+      "group": "red-plum",
+      "targetHex": "#874F52",
+      "swatchHex": "#874F52",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-6-cherry-red",
+      "code": "5.6",
+      "name": "Cherry red",
+      "level": 5,
+      "tone": "red",
+      "group": "red-plum",
+      "targetHex": "#95473C",
+      "swatchHex": "#95473C",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-6-6-ruby-red",
+      "code": "6.6",
+      "name": "Ruby red",
+      "level": 6,
+      "tone": "red",
+      "group": "red-plum",
+      "targetHex": "#A9584C",
+      "swatchHex": "#A9584C",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-7-6-light-red",
+      "code": "7.6",
+      "name": "Light red",
+      "level": 7,
+      "tone": "red",
+      "group": "red-plum",
+      "targetHex": "#BE6A5D",
+      "swatchHex": "#BE6A5D",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-3-golden-brown",
+      "code": "4.3",
+      "name": "Golden brown",
+      "level": 4,
+      "tone": "golden",
+      "group": "copper-warm",
+      "targetHex": "#634921",
+      "swatchHex": "#634921",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-4-4-copper-brown",
+      "code": "4.4",
+      "name": "Copper brown",
+      "level": 4,
+      "tone": "copper",
+      "group": "copper-warm",
+      "targetHex": "#75401E",
+      "swatchHex": "#75401E",
+      "limitationIds": [
+        "swatch-approximation"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-3-light-golden-brown",
+      "code": "5.3",
+      "name": "Light golden brown",
+      "level": 5,
+      "tone": "golden",
+      "group": "copper-warm",
+      "targetHex": "#755A30",
+      "swatchHex": "#755A30",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-5-4-light-copper-brown",
+      "code": "5.4",
+      "name": "Light copper brown",
+      "level": 5,
+      "tone": "copper",
+      "group": "copper-warm",
+      "targetHex": "#88502E",
+      "swatchHex": "#88502E",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-6-4-copper-dark-blonde",
+      "code": "6.4",
+      "name": "Copper dark blonde",
+      "level": 6,
+      "tone": "copper",
+      "group": "copper-warm",
+      "targetHex": "#9C613E",
+      "swatchHex": "#9C613E",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-7-4-copper-blonde",
+      "code": "7.4",
+      "name": "Copper blonde",
+      "level": 7,
+      "tone": "copper",
+      "group": "copper-warm",
+      "targetHex": "#B0734E",
+      "swatchHex": "#B0734E",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-8-4-light-copper-blonde",
+      "code": "8.4",
+      "name": "Light copper blonde",
+      "level": 8,
+      "tone": "copper",
+      "group": "copper-warm",
+      "targetHex": "#C4855F",
+      "swatchHex": "#C4855F",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-6-0-dark-blonde",
+      "code": "6",
+      "name": "Dark blonde",
+      "level": 6,
+      "tone": "neutral",
+      "group": "blonde",
+      "targetHex": "#806C55",
+      "swatchHex": "#806C55",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-7-0-medium-blonde",
+      "code": "7",
+      "name": "Medium blonde",
+      "level": 7,
+      "tone": "neutral",
+      "group": "blonde",
+      "targetHex": "#927E66",
+      "swatchHex": "#927E66",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-8-0-light-blonde",
+      "code": "8",
+      "name": "Light blonde",
+      "level": 8,
+      "tone": "neutral",
+      "group": "blonde",
+      "targetHex": "#A59077",
+      "swatchHex": "#A59077",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-9-0-very-light-blonde",
+      "code": "9",
+      "name": "Very light blonde",
+      "level": 9,
+      "tone": "neutral",
+      "group": "blonde",
+      "targetHex": "#B8A289",
+      "swatchHex": "#B8A289",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-6-1-ash-dark-blonde",
+      "code": "6.1",
+      "name": "Ash dark blonde",
+      "level": 6,
+      "tone": "ash",
+      "group": "ash-golden",
+      "targetHex": "#776E60",
+      "swatchHex": "#776E60",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-6-3-golden-dark-blonde",
+      "code": "6.3",
+      "name": "Golden dark blonde",
+      "level": 6,
+      "tone": "golden",
+      "group": "ash-golden",
+      "targetHex": "#886B40",
+      "swatchHex": "#886B40",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-7-1-ash-medium-blonde",
+      "code": "7.1",
+      "name": "Ash medium blonde",
+      "level": 7,
+      "tone": "ash",
+      "group": "ash-golden",
+      "targetHex": "#898072",
+      "swatchHex": "#898072",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-7-3-golden-medium-blonde",
+      "code": "7.3",
+      "name": "Golden medium blonde",
+      "level": 7,
+      "tone": "golden",
+      "group": "ash-golden",
+      "targetHex": "#9B7C51",
+      "swatchHex": "#9B7C51",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-8-1-ash-light-blonde",
+      "code": "8.1",
+      "name": "Ash light blonde",
+      "level": 8,
+      "tone": "ash",
+      "group": "ash-golden",
+      "targetHex": "#9C9283",
+      "swatchHex": "#9C9283",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-8-3-light-golden-blonde",
+      "code": "8.3",
+      "name": "Light golden blonde",
+      "level": 8,
+      "tone": "golden",
+      "group": "ash-golden",
+      "targetHex": "#AE8E62",
+      "swatchHex": "#AE8E62",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-9-1-very-light-ash-blonde",
+      "code": "9.1",
+      "name": "Very light ash blonde",
+      "level": 9,
+      "tone": "ash",
+      "group": "ash-golden",
+      "targetHex": "#AEA596",
+      "swatchHex": "#AEA596",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-9-3-very-light-golden-blonde",
+      "code": "9.3",
+      "name": "Very light golden blonde",
+      "level": 9,
+      "tone": "golden",
+      "group": "ash-golden",
+      "targetHex": "#C2A074",
+      "swatchHex": "#C2A074",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-8-2-light-pearl-blonde",
+      "code": "8.2",
+      "name": "Light pearl blonde",
+      "level": 8,
+      "tone": "violet",
+      "group": "pearl-platinum",
+      "targetHex": "#A09090",
+      "swatchHex": "#A09090",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-9-2-very-light-pearl-blonde",
+      "code": "9.2",
+      "name": "Very light pearl blonde",
+      "level": 9,
+      "tone": "violet",
+      "group": "pearl-platinum",
+      "targetHex": "#B2A2A2",
+      "swatchHex": "#B2A2A2",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-10-0-lightest-blonde",
+      "code": "10",
+      "name": "Lightest blonde",
+      "level": 10,
+      "tone": "neutral",
+      "group": "pearl-platinum",
+      "targetHex": "#CCB59C",
+      "swatchHex": "#CCB59C",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-10-1-lightest-ash-blonde",
+      "code": "10.1",
+      "name": "Lightest ash blonde",
+      "level": 10,
+      "tone": "ash",
+      "group": "pearl-platinum",
+      "targetHex": "#C2B7A8",
+      "swatchHex": "#C2B7A8",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure",
+        "ash-green"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    },
+    {
+      "id": "dev-10-2-platinum-pearl-blonde",
+      "code": "10.2",
+      "name": "Platinum pearl blonde",
+      "level": 10,
+      "tone": "violet",
+      "group": "pearl-platinum",
+      "targetHex": "#C6B5B5",
+      "swatchHex": "#C6B5B5",
+      "limitationIds": [
+        "swatch-approximation",
+        "lift-limit",
+        "dye-cant-lift-dye",
+        "warm-exposure"
+      ],
+      "productLimitations": [],
+      "provenance": "Illustrative entry; colour from the Box Truth model."
+    }
+  ]
+}

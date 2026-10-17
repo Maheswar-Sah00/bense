@@ -1,0 +1,10 @@
+{
+  "dark-base-9-1": {
+    "provenance": "Real YouCam Hair Color renders of a sample photo, not your photo. The photo is YouCam’s documentation sample, recoloured to dark brown with YouCam Hair Color (#2E2117) to make a synthetic dark-hair base.",
+    "renderedAt": "2026-10-15T12:17:00Z",
+    "colorIntensity": 100,
+    "before": "/demo-assets/reveal-before.jpg",
+    "promise": { "image": "/demo-assets/reveal-promise.jpg", "colour": "#AEA596" },
+    "result": { "image": "/demo-assets/reveal-result.jpg", "colour": "#876956" }
+  }
+}
