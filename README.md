@@ -21,13 +21,14 @@ Built for the Perfect Corp **YouCam API hackathon, edition 2** (submissions clos
 7. [Where each part runs](#7-where-each-part-runs)
 8. [What we tested live, and what we found](#8-what-we-tested-live-and-what-we-found)
 9. [The research that led here](#9-the-research-that-led-here)
-10. [The shade catalogue](#10-the-shade-catalogue)
-11. [Run it](#11-run-it)
-12. [Tests](#12-tests)
-13. [Honest limits](#13-honest-limits)
-14. [What's next](#14-whats-next)
-15. [Project map](#15-project-map)
-16. [Sources](#16-sources)
+10. [Research articles: what they say, and how YouCam and Bense answer them](#10-research-articles-what-they-say-and-how-youcam-and-bense-answer-them)
+11. [The shade catalogue](#11-the-shade-catalogue)
+12. [Run it](#12-run-it)
+13. [Tests](#13-tests)
+14. [Honest limits](#14-honest-limits)
+15. [What's next](#15-whats-next)
+16. [Project map](#16-project-map)
+17. [Sources](#17-sources)
 
 ---
 
@@ -244,7 +245,50 @@ The full research, with every number graded by how strong its source is, is in [
 
 ---
 
-## 10. The shade catalogue
+## 10. Research articles: what they say, and how YouCam and Bense answer them
+
+Each article below shaped a rule, a warning or a screen in Bense. **YouCam's part** is what the YouCam APIs contribute; where no YouCam API can address the article, the table says so. **Bense's answer** is what we built on top.
+
+### People want to dye at home, and worry about the result
+
+| Article | What it says (relevant part) | YouCam's part | Bense's answer |
+|---|---|---|---|
+| [CEW / Clairol, Apr 2024](https://cew.org/?p=42538) | **80%** of 2,000 US women colour their hair. | Hair Color API puts any shade on a selfie, at mass-market scale. | Uses that same render, but for the result your hair will really get. |
+| [BeautyMatter](https://www.beautymatter.com/articles/just-the-numbers-new-quarantine-hair-color-habits) | **33%** dyed at home during the pandemic; **88%** of them to cover greys. | Not covered by an API. | Built for the home-dye moment: one selfie, about 25 seconds, before you buy. |
+| [Mintel, India 2024](https://www.mintel.com/insights/beauty-and-personal-care/latest-hair-colour-trends-in-india) | Over half of Indian users colour to cover greys, at home first; **4 in 10** former users say it left hair very dry. | Hair Type, Frizz, Length and Density read the hair from photos. | The hair profile turns those readings into care tips; the catalogue includes **53** real Indian shelf shades. |
+| [Premium Beauty News (Garnier / OnePoll), Jan 2021](https://www.premiumbeautynews.com/en/at-home-hair-dyeing-a-first-for,17831) | **47.8%** of US women dyeing at home worried the result wouldn't be what they wanted; **42.7%** worried about picking the shade. | Hair Color renders the box shade on your own photo. | Shows two pictures side by side, the box's promise and the predicted result, with the level gap in numbers. |
+| [The Drum (L'Oréal), May 2019](https://www.thedrum.com/news/2019/05/09/l-oreal-launches-direct-consumer-hair-dye-brand-colorco) | L'Oréal's own GM: up to **70%** of at-home colour users are unsure which shade suits them. | Not covered by an API. | When a box won't reach its shade, Bense suggests the closest real boxes that will, each with its own prediction. |
+
+### What a box dye can and can't do
+
+| Article | What it says (relevant part) | YouCam's part | Bense's answer |
+|---|---|---|---|
+| [Garnier USA](https://www.garnierusa.com/en/hair-color-needs/new-to-hair-color) | Permanent box dye lifts natural hair only **2–3 levels**; "another box of hair dye will not lighten your hair without bleach". | Hair Color returns a hair mask, so Bense measures lightness on hair pixels only. Facial Color Tones names the colour family as a cross-check. | Measures your starting level, caps the prediction at start + lift (a setting, default 2 levels), and shows how many levels short the box falls. |
+| [The Shade](https://the-shade.helpscoutdocs.com/article/52-how-light-can-i-colour-my-hair) | Dye can't lift dye: a new box won't lighten hair that was coloured before. | A photo can't show dye history, so no API can tell. | Asks "Has your hair been dyed?" If yes, the predicted level stays where it is. |
+| [Revlon Professional](https://cdn.revlonprofessional.com/blog/correct-black-box-dyed-hair) | Black box dye is the hardest to correct; dyed hair "can take twice as long to lighten each shade level". | In our tests the raw Hair Color render still lightened black hair to brown. | Warns on black or very dark dye, and the on-device finishing caps the picture at the predicted lift, so it never shows more change than the rules allow. |
+| [Open Exam Prep (colour theory)](https://open-exam-prep.com/study-guides/tx-barber/haircoloring/color-formulation-correction) | Lightening exposes warm underlying pigment in order: red → orange → gold → yellow. | Hair Color renders tone well when given the right target colour. | Predicts which warm pigment will show at your result level and shifts the rendered colour warmer to match. |
+| [CurlCentric, green tones](https://www.curlcentric.com/why-is-my-hair-turning-green-when-i-dye-it/) | Ash over yellow, lightened or porous hair can turn green. | In our tests YouCam rendered low-colour ash as grey or silver. | Raised the ash colour in the shade model, and warns to strand-test an ash shade over warm hair. |
+| [CurlCentric, box dye](https://www.curlcentric.com/why-do-hairdressers-hate-box-dye/) | Henna and some box dyes react with other colour products. | A photo can't show what the earlier colour was. | Asks what the earlier colour was. For henna it warns of the reaction and asks for a strand test first. |
+| [Wella](https://www.wella.com/professional/en-GB/blog/hair-colour/differences-between-semi-and-demi-permanent-hair-color) | Semi- and demi-permanent colour adds tone but doesn't lighten. | Not covered by an API. | Reads each box's permanence from the catalogue; semi and demi boxes predict no lift. |
+
+### Safety
+
+| Article | What it says (relevant part) | YouCam's part | Bense's answer |
+|---|---|---|---|
+| [NHS, hair dye reactions](https://www.nhs.uk/conditions/hair-dye-reactions/) | Reactions are "fairly common but are usually mild"; symptoms "can take up to 72 hours to appear"; avoid PPD dyes after a reaction, and "black henna" can contain high PPD. | Not a job for an image API. | Three safety questions come before any result. A past reaction or black henna stops the at-home suggestion; every result reminds you to do the box's skin test. |
+| [FDA, hair dyes](https://www.fda.gov/cosmetics/cosmetic-products/hair-dyes) | Hair dyes can cause allergic reactions and hair loss, and eye injuries including blindness near the eyes; no colour additive is approved for brows or lashes. | Not a job for an image API. | Asks if you plan to dye brows or lashes, and if so says don't. |
+| [PubMed, India study](https://pubmed.ncbi.nlm.nih.gov/24574693/) | **42%** of hair-dye users reported adverse reactions; **34%** had never done a skin test. | Not a job for an image API. | The skin-test reminder appears on every result, not only when something looks risky. |
+
+### What a wrong box costs, and the gap in today's try-ons
+
+| Article | What it says (relevant part) | YouCam's part | Bense's answer |
+|---|---|---|---|
+| [Bluffton Hair Lounge](https://blufftonhairloungecom-s2lwc-commit-0b4812d.kinsta.page/services/color-correction/), [BangStyle](https://www.bangstyle.com/posts/Box-Dye-Hair-Color-What-You-Need-To-Know-821), [SalonGeek](https://salongeek.com/threads/colour-correction.125144) | Colour correction costs **$200–800** and can take up to **4** visits. | Hair Color shows a look before anything is bought. | Catches the mismatch before you buy, and offers a closer box that can actually reach its shade. |
+| [Perfect Corp, blonde hair filter](https://www.perfectcorp.com/business/products/blonde-hair-filter) | Perfect Corp's own blonde try-on says it "may not fully reflect" porosity or pigment absorption. | The same Hair Color API call Bense builds on. | Adds what that note says is missing: your starting level, dye history, the lift limit and natural finishing. That's the "realistic result" layer. |
+
+---
+
+## 11. The shade catalogue
 
 **245 shades** in two sets:
 
@@ -262,7 +306,7 @@ The full research, with every number graded by how strong its source is, is in [
 
 ---
 
-## 11. Run it
+## 12. Run it
 
 You need Node 22+ and npm. The browser tests use an installed Edge or Chrome.
 
@@ -305,7 +349,7 @@ The key is read only by the server. Never prefix it with `VITE_`. `.env` files a
 
 ---
 
-## 12. Tests
+## 13. Tests
 
 | Command | What it checks | YouCam units |
 |---|---|---|
@@ -323,7 +367,7 @@ A test also checks that demo data can never leak into a live result.
 
 ---
 
-## 13. Honest limits
+## 14. Honest limits
 
 - The four colour rules come from brand and colourist guidance. They are **not scientifically validated**, so every result is an estimate.
 - The lightness-to-level bands are **not calibrated** against salon-graded photos. Without the white card, light can shift the level by about one. You always confirm it.
@@ -336,7 +380,7 @@ A test also checks that demo data can never leak into a live result.
 
 ---
 
-## 14. What's next
+## 15. What's next
 
 1. **Calibrate the level** with 10–20 selfies whose levels are graded by hand.
 2. **Verify Hair Type and Frizz** with real photos turned about 45°.
@@ -347,7 +391,7 @@ A test also checks that demo data can never leak into a live result.
 
 ---
 
-## 15. Project map
+## 16. Project map
 
 ```
 bense/
@@ -372,11 +416,11 @@ The diagrams are real Excalidraw files: open any `docs/diagrams/*.excalidraw` at
 
 ---
 
-## 16. Sources
+## 17. Sources
 
 **Dye rules and safety:** [Garnier USA](https://www.garnierusa.com/en/hair-color-needs/new-to-hair-color) · [The Shade](https://the-shade.helpscoutdocs.com/article/52-how-light-can-i-colour-my-hair) · [Open Exam Prep](https://open-exam-prep.com/study-guides/tx-barber/haircoloring/color-formulation-correction) · [CurlCentric, green tones](https://www.curlcentric.com/why-is-my-hair-turning-green-when-i-dye-it/) · [CurlCentric, box dye](https://www.curlcentric.com/why-do-hairdressers-hate-box-dye/) · [Revlon Professional](https://cdn.revlonprofessional.com/blog/correct-black-box-dyed-hair) · [Wella](https://www.wella.com/professional/en-GB/blog/hair-colour/differences-between-semi-and-demi-permanent-hair-color) · [FDA, hair dyes](https://www.fda.gov/cosmetics/cosmetic-products/hair-dyes) · [NHS, hair dye reactions](https://www.nhs.uk/conditions/hair-dye-reactions/)
 
-**Market and cost:** [CEW](https://cew.org/?p=42538) · [BeautyMatter](https://www.beautymatter.com/articles/just-the-numbers-new-quarantine-hair-color-habits) · [Cosmetics Business](https://www.cosmeticsbusiness.com/scott-cornwall-survey-reveals-uk-hair-colouring-facts-93101) · [Mintel](https://www.mintel.com/insights/beauty-and-personal-care/latest-hair-colour-trends-in-india) · [Bluffton Hair Lounge](https://blufftonhairloungecom-s2lwc-commit-0b4812d.kinsta.page/services/color-correction/) · [BangStyle](https://www.bangstyle.com/posts/Box-Dye-Hair-Color-What-You-Need-To-Know-821) · [SalonGeek](https://salongeek.com/threads/colour-correction.125144) · [Perfect Corp blonde filter](https://www.perfectcorp.com/business/products/blonde-hair-filter)
+**Market and cost:** [CEW](https://cew.org/?p=42538) · [BeautyMatter](https://www.beautymatter.com/articles/just-the-numbers-new-quarantine-hair-color-habits) · [Cosmetics Business](https://www.cosmeticsbusiness.com/scott-cornwall-survey-reveals-uk-hair-colouring-facts-93101) · [Mintel](https://www.mintel.com/insights/beauty-and-personal-care/latest-hair-colour-trends-in-india) · [Bluffton Hair Lounge](https://blufftonhairloungecom-s2lwc-commit-0b4812d.kinsta.page/services/color-correction/) · [BangStyle](https://www.bangstyle.com/posts/Box-Dye-Hair-Color-What-You-Need-To-Know-821) · [SalonGeek](https://salongeek.com/threads/colour-correction.125144) · [Perfect Corp blonde filter](https://www.perfectcorp.com/business/products/blonde-hair-filter) · [Premium Beauty News](https://www.premiumbeautynews.com/en/at-home-hair-dyeing-a-first-for,17831) · [The Drum](https://www.thedrum.com/news/2019/05/09/l-oreal-launches-direct-consumer-hair-dye-brand-colorco) · [PubMed, India dye reactions](https://pubmed.ncbi.nlm.nih.gov/24574693/)
 
 **Hackathon:** [Edition 1 gallery](https://youcam-api.devpost.com/project-gallery) · [Edition 2 overview](https://youcam-api-skin-ai-ecommerce.devpost.com/) · [Edition 2 rules](https://youcam-api-skin-ai-ecommerce.devpost.com/rules) · [Edition 2 gallery](https://youcam-api-skin-ai-ecommerce.devpost.com/project-gallery)
 
