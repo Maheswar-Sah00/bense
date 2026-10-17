@@ -125,7 +125,7 @@ export interface EngineWarning {
 }
 
 export interface NextAction {
-  id: 'confirm-level' | 'answer-safety' | 'skin-test' | 'strand-test' | 'see-professional' | 'closer-shade' | 'pharmacist'
+  id: 'confirm-level' | 'answer-safety' | 'skin-test' | 'strand-test' | 'closer-shade' | 'pharmacist'
   text: string
 }
 
@@ -329,7 +329,7 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
       warnings.push({
         id: 'black-dyed',
         severity: 'caution',
-        text: 'Black or very dark dye is the hardest to lighten. Professionals say dyed hair can take about twice as long per level, so get a salon assessment.',
+        text: 'Black or very dark dye is the hardest to lighten. Dyed hair can take about twice as long per level, so a box dye won’t get you far.',
         sourceIds: ['revlon-dark'],
       })
     }
@@ -337,7 +337,7 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
       warnings.push({
         id: 'henna-history',
         severity: 'caution',
-        text: 'Henna and some box dyes can react with other colour products. Get a professional assessment before applying anything over it.',
+        text: 'Henna and some box dyes can react with other colour products. Do a strand test before applying anything over it.',
         sourceIds: ['box-dye-henna'],
       })
     }
@@ -429,7 +429,7 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
       warnings.push({
         id: 'beyond-lift',
         severity: 'caution',
-        text: `This shade needs about ${plural(target.level - startLevel, 'level')} of lightening, well beyond what we assume a box dye can do. A salon colourist can tell you what’s realistic.`,
+        text: `This shade needs about ${plural(target.level - startLevel, 'level')} of lightening, well beyond what we assume a box dye can do.`,
         sourceIds: ['garnier-lift'],
       })
     }
@@ -438,9 +438,6 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
       id: 'closer-shade',
       text: `Choose a box closer to your hair, around level ${reachable}, for a result nearer the picture.`,
     })
-  }
-  if (professional) {
-    actions.push({ id: 'see-professional', text: 'Get a professional colour assessment before buying.' })
   }
   if (!blocked && (lightening || lightenedBase || start.previouslyDyed !== 'no')) {
     actions.push({ id: 'strand-test', text: 'Do a strand test on a hidden section to see the real result.' })

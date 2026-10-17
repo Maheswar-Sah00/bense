@@ -10,7 +10,8 @@ import { captureVideoFrame, ImageError, prepareUpload, type PreparedImage } from
 import { POSE_INTROS } from './poseGuide'
 import { PoseGuidePanel } from './PoseGuidePanel'
 import { useCamera, type Facing } from './useCamera'
-import { readVoicePref, saveVoicePref, speak, usePoseGuide } from './usePoseGuide'
+import { say, stopSpeaking } from '../voice/voice'
+import { readVoicePref, saveVoicePref, usePoseGuide } from './usePoseGuide'
 
 export interface CaptureGuide {
   overlay: OverlayKind
@@ -81,13 +82,13 @@ export function PhotoCapture({ view, guide, photo, onConfirm, facing = 'user', p
   function changeVoice(on: boolean) {
     setVoice(on)
     saveVoicePref(on)
-    if (!on) window.speechSynthesis?.cancel()
-    else if (poseView) speak('Voice guide on.')
+    if (!on) stopSpeaking()
+    else if (poseView) say('Voice guide on.')
   }
 
   async function startCamera() {
     // Spoken inside the tap, which also lets iPhones speak later instructions.
-    if (poseView && voice) speak(POSE_INTROS[poseView])
+    if (poseView && voice) say(POSE_INTROS[poseView])
     dispatch({ type: 'camera-starting' })
     const issue = await startStream(facing, () => dispatch({ type: 'camera-failed', issue: 'interrupted' }))
     dispatch(issue ? { type: 'camera-failed', issue } : { type: 'camera-live' })

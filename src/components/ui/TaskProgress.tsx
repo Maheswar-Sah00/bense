@@ -28,11 +28,14 @@ export function TaskProgress({
   steps,
   startedAt,
   typicalSeconds,
+  engine = 'YouCam AI',
 }: {
   title: string
   steps: TaskStep[]
   startedAt: number
   typicalSeconds: number
+  /** The service doing the live work, shown as a badge so it's clear what runs here. */
+  engine?: string
 }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -47,6 +50,11 @@ export function TaskProgress({
       <div className="task-progress-head">
         <span className="spinner" aria-hidden="true" />
         <strong>{title}</strong>
+        <span className="engine-badge">
+          <i aria-hidden="true" />
+          Powered by {engine}
+          <span className="engine-live">Live</span>
+        </span>
       </div>
       <ol className="task-list">
         {steps.map((step) => (

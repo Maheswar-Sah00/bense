@@ -3,36 +3,7 @@ import type { Recommendation } from '../../../shared/domain/alternatives'
 import { HAIR_LEVEL_NAMES } from '../../../shared/domain/hairLevel'
 import { TONE_LABELS } from '../../../shared/domain/shadeCatalogue'
 import { Button } from '../../components/ui/Button'
-import { Icon } from '../../components/ui/Icon'
 import { useFlow } from '../../state/FlowContext'
-
-/** The professional-consultation card, shown when the engine's status says so. */
-export function ProfessionalCard({ recommendation }: { recommendation: Recommendation }) {
-  // Short reasons only; the full warnings with sources are listed separately.
-  const { rules, warnings, result } = recommendation.original
-  const reasons: string[] = []
-  if (rules.some((r) => r.id === 'dye-cant-lift-dye')) reasons.push('Box dye can’t lighten hair that has been coloured before.')
-  if (warnings.some((w) => w.id === 'beyond-lift') && result) {
-    reasons.push(`The box is ${result.levelsShort} levels lighter than we expect a box dye to reach from your hair.`)
-  }
-  return (
-    <div className="recommend-card recommend-pro">
-      <span className="recommend-icon">
-        <Icon name="profile" size={22} />
-      </span>
-      <div>
-        <strong>Recommended: see a professional colourist</strong>
-        {reasons.length > 0 && (
-          <ul className="recommend-reasons">
-            {reasons.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  )
-}
 
 /** One closer box shade, with the engine's own prediction for it and a way to switch to it. */
 export function AlternativeShades({

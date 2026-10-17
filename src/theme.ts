@@ -16,7 +16,7 @@ export function readTheme(): Theme {
 export function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme
   const dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121511' : '#ffffff')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#181716' : '#ffffff')
 }
 
 export function saveTheme(theme: Theme) {

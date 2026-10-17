@@ -100,3 +100,14 @@ export function poseGuidance(view: AnalysisView, pose: HeadPose | null): Guidanc
 
 /** The angle the gauge shows for a view: turn for the front and sides, tilt for the top. */
 export const gaugeAxis = (view: AnalysisView): 'turn' | 'tilt' => (view === 'top' ? 'tilt' : 'turn')
+
+/** Every line the guide can say for a view, so the voice can be fetched before the camera opens. */
+export function posePhrases(view: AnalysisView): string[] {
+  const lines = new Set([poseGuidance(view, null).speech])
+  for (let turn = -80; turn <= 80; turn += 4) {
+    for (let tilt = -20; tilt <= 70; tilt += 4) {
+      for (const width of [0.1, 0.6, 1]) lines.add(poseGuidance(view, { turn, tilt, width }).speech)
+    }
+  }
+  return [...lines]
+}

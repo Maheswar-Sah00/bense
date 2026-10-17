@@ -269,9 +269,10 @@ export default function ResultsStep() {
             <div className="note">
               <Icon name="info" size={20} />
               <div>
-                <strong>Professional advice</strong>
                 {professional.map((tip) => (
-                  <p key={tip.id}>{tip.text}</p>
+                  <p key={tip.id}>
+                    <strong>{tip.title}.</strong> {tip.text}
+                  </p>
                 ))}
               </div>
             </div>

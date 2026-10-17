@@ -10,7 +10,7 @@ import { EmptyState } from '../../components/ui/States'
 import { useFlow } from '../../state/FlowContext'
 import { colourResumePath } from '../../state/flow'
 import { ShadeReach } from './LevelChart'
-import { AlternativeShades, ProfessionalCard } from './Recommendation'
+import { AlternativeShades } from './Recommendation'
 
 export default function AlternativesStep() {
   const { colour, safety, settings } = useFlow()
@@ -62,8 +62,6 @@ export default function AlternativesStep() {
         </div>
       ) : (
         <>
-          {rec.professional && <ProfessionalCard recommendation={rec} />}
-
           {rec.kind === 'on-target' && (
             <div className="note">
               <p>
@@ -74,7 +72,7 @@ export default function AlternativesStep() {
 
           {rec.kind === 'closer-shades' && (
             <section>
-              <SectionHeader title={rec.professional ? 'If you’d rather use a box' : 'Closer box shades'} />
+              <SectionHeader title="Closer box shades" />
               <p className="fine-print">The lightest shades a box can reach from your level.</p>
               <ShadeReach recommendation={rec} shade={shade} startLevel={input.starting.level} />
               <AlternativeShades recommendation={rec} />

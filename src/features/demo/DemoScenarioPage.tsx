@@ -14,7 +14,7 @@ import { OriginBadge } from '../../components/ui/OriginBadge'
 import { EmptyState } from '../../components/ui/States'
 import { LevelJourney } from '../hair-colour/LevelChart'
 import { GapLine, RuleList, StatGrid, WarningItem } from '../hair-colour/PredictionParts'
-import { AlternativeShades, ProfessionalCard } from '../hair-colour/Recommendation'
+import { AlternativeShades } from '../hair-colour/Recommendation'
 import { Pair } from '../hair-colour/Reveal'
 import { DemoBar } from './DemoBar'
 
@@ -149,7 +149,6 @@ export default function DemoScenarioPage() {
 
       <section aria-label="Recommendation">
         <SectionHeader title="Better option" />
-        {rec.professional && <ProfessionalCard recommendation={rec} />}
         {rec.kind === 'closer-shades' && <AlternativeShades recommendation={rec} readOnly />}
         {rec.kind === 'on-target' && <p className="lead">This box should reach its level.</p>}
       </section>

@@ -4,8 +4,14 @@ import type { Env } from './env'
 import { colourRoutes, type ColourRouteOptions } from './routes/colour'
 import { hairRoutes } from './routes/hair'
 import { healthRoutes } from './routes/health'
+import { voiceRoutes } from './routes/voice'
+import { staticSender } from './static'
 
-export type AppDeps = Omit<ColourRouteOptions, 'env'>
+export type AppDeps = Omit<ColourRouteOptions, 'env'> & {
+  voiceFetch?: typeof fetch
+  /** The built app (dist/). When set, every non-API GET is answered from it. */
+  staticDir?: string
+}
 
 export function buildApp(env: Env, deps: AppDeps = {}) {
   // Default request logs hold method, URL and status only: never bodies (photos) or headers (keys).
@@ -14,8 +20,11 @@ export function buildApp(env: Env, deps: AppDeps = {}) {
   app.register(healthRoutes, { prefix: '/api', env })
   app.register(colourRoutes, { prefix: '/api', env, ...deps })
   app.register(hairRoutes, { prefix: '/api', env, youcam: deps.youcam, poll: deps.poll, maxConcurrent: deps.maxConcurrent })
+  app.register(voiceRoutes, { prefix: '/api', env, fetchImpl: deps.voiceFetch })
 
+  const sendStatic = deps.staticDir ? staticSender(deps.staticDir) : null
   app.setNotFoundHandler((request, reply) => {
+    if (sendStatic && request.method === 'GET' && !request.url.startsWith('/api/')) return sendStatic(request.url, reply)
     const body: ApiError = { error: `No route for ${request.method} ${request.url}`, code: 'not_found' }
     reply.code(404).send(body)
   })

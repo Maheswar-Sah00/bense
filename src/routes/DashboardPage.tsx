@@ -56,38 +56,83 @@ export default function DashboardPage() {
         <IconLink icon="settings" label="Settings" to="/settings" />
       </header>
 
-      <div className="home-hero">
-        <p className="eyebrow">Bense · 本色</p>
-        <h1 className="hero-title">
-          Will this box
-          <br />
-          work on you?
-        </h1>
-        <p className="hero-sub">Your real level. The box’s honest result.</p>
-      </div>
+      <div className="home-intro">
+        <div className="home-hero">
+          <p className="eyebrow">Bense · 本色</p>
+          <h1 className="hero-title">
+            Will this box
+            <br />
+            work on you?
+          </h1>
+          <p className="hero-sub">Your real level. The box’s honest result.</p>
+        </div>
 
-      <nav className="home-actions" aria-label="Start">
-        <Link to="/colour" className="cta cta-primary">
-          <span className="cta-text">
-            <span className="cta-title">{colourTitle}</span>
-            <span className="cta-meta">{colourMeta}</span>
+        <figure
+          className="home-show"
+          aria-label="Example: natural hair, the colour on the box, and the result Bense predicts"
+        >
+          <div className="show-card show-before">
+            <div className="show-flip">
+              <div className="show-face show-front">
+                <img src="/demo-assets/reveal-before.jpg" alt="" loading="lazy" />
+                <span className="show-tag">Your hair</span>
+              </div>
+              <div className="show-face show-back">
+                <span>本</span>
+              </div>
+            </div>
+          </div>
+          <div className="show-card show-promise">
+            <div className="show-flip">
+              <div className="show-face show-front">
+                <img src="/demo-assets/reveal-promise.jpg" alt="" loading="lazy" />
+                <span className="show-tag">Box promise</span>
+              </div>
+              <div className="show-face show-back">
+                <span>本</span>
+              </div>
+            </div>
+          </div>
+          <div className="show-card show-result">
+            <div className="show-flip">
+              <div className="show-face show-front">
+                <img src="/demo-assets/reveal-result.jpg" alt="" />
+                <span className="show-tag show-tag-accent">What you’ll get</span>
+              </div>
+              <div className="show-face show-back">
+                <span>本</span>
+              </div>
+            </div>
+          </div>
+          <span className="show-chip" aria-hidden="true">
+            <i />
+            Honest preview
           </span>
-          {(startLevel || shade) && (
-            <span className="cta-swatches" aria-hidden="true">
-              {startLevel && <span style={{ background: HAIR_LEVEL_SWATCHES[startLevel] }} />}
-              {shade && <span style={{ background: shade.swatchHex }} />}
+        </figure>
+
+        <nav className="home-actions" aria-label="Start">
+          <Link to="/colour" className="cta cta-primary">
+            <span className="cta-text">
+              <span className="cta-title">{colourTitle}</span>
+              <span className="cta-meta">{colourMeta}</span>
             </span>
-          )}
-          <Icon name="chevron" size={22} />
-        </Link>
-        <Link to="/analysis" className="cta">
-          <span className="cta-text">
-            <span className="cta-title">Hair profile</span>
-            <span className="cta-meta">{hairMeta}</span>
-          </span>
-          <Icon name="chevron" size={22} />
-        </Link>
-      </nav>
+            {(startLevel || shade) && (
+              <span className="cta-swatches" aria-hidden="true">
+                {startLevel && <span style={{ background: HAIR_LEVEL_SWATCHES[startLevel] }} />}
+                {shade && <span style={{ background: shade.swatchHex }} />}
+              </span>
+            )}
+            <Icon name="chevron" size={22} />
+          </Link>
+          <Link to="/analysis" className="cta">
+            <span className="cta-text">
+              <span className="cta-title">Hair profile</span>
+              <span className="cta-meta">{hairMeta}</span>
+            </span>
+            <Icon name="chevron" size={22} />
+          </Link>
+        </nav>
+      </div>
 
       <figure className="home-scale">
         <div className="level-strip" aria-label="Hair levels 1 to 10">

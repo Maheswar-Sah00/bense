@@ -3,12 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "concurrently -k -n web,api -c cyan,magenta \"npm:dev:web\" \"npm:dev:api\"",
     "dev:web": "vite",
     "dev:api": "tsx watch server/index.ts",
     "build": "tsc -b && vite build",
     "start:api": "tsx server/index.ts",
+    "start": "tsx server/index.ts --serve-app",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "lint": "eslint .",

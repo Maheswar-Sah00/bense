@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import type { AnalysisView } from '../../state/captureSession'
 import { createPoseTracker, type HeadPose, type PoseTracker } from './headPose'
-import { poseGuidance, type Guidance } from './poseGuide'
+import { isSpeaking, preloadSpeech, say, stopSpeaking } from '../voice/voice'
+import { POSE_INTROS, poseGuidance, posePhrases, type Guidance } from './poseGuide'
 
 export interface PoseGuideState {
   tracker: 'loading' | 'ready' | 'unavailable'
@@ -16,6 +17,7 @@ export const HOLD_MS = 1500
 const FRAME_MS = 80 // ~12 detections a second is plenty for a head turn
 const SETTLE_MS = 350 // an instruction must last this long before it's spoken, so the voice doesn't chatter
 const REMIND_MS = 5000 // repeat an unmet instruction this often
+const INTRO_MAX_MS = 9000 // stop waiting for the opening instruction even if the voice never reports the end
 
 const VOICE_KEY = 'bense.voiceGuide'
 
@@ -33,16 +35,6 @@ export function saveVoicePref(on: boolean) {
   } catch {
     // Private mode: the choice lasts for this screen only.
   }
-}
-
-/** Speaks with the device's own voice (no network). Replaces anything still being said. */
-export function speak(text: string) {
-  const synth = window.speechSynthesis
-  if (!synth) return
-  synth.cancel()
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.rate = 1.05
-  synth.speak(utterance)
 }
 
 /** Vibrates where supported (Android); iPhones ignore it. */
@@ -81,6 +73,7 @@ export function usePoseGuide({
 
   useEffect(() => {
     if (!active || !view) return
+    if (voiceRef.current) preloadSpeech([POSE_INTROS[view], ...posePhrases(view), 'Got it.'])
     let cancelled = false
     let frame = 0
     let tracker: PoseTracker | null = null
@@ -93,6 +86,7 @@ export function usePoseGuide({
     let spokenAt = 0
     let holdSince = 0
     let done = false
+    const startedAt = performance.now()
 
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick)
@@ -127,9 +121,9 @@ export function usePoseGuide({
       const settled = now - candidateSince >= SETTLE_MS
       const remind = guidance.status !== 'hold' && now - spokenAt >= REMIND_MS
       // Let the opening instruction finish before the first correction.
-      const introPlaying = !spoken && window.speechSynthesis?.speaking
+      const introPlaying = !spoken && isSpeaking() && now - startedAt < INTRO_MAX_MS
       if (settled && !introPlaying && (guidance.key !== spoken || remind)) {
-        if (voiceRef.current) speak(guidance.speech)
+        if (voiceRef.current) say(guidance.speech)
         if (guidance.key !== spoken) buzz(guidance.status === 'hold' ? [40, 60, 40] : 35)
         spoken = guidance.key
         spokenAt = now
@@ -140,7 +134,7 @@ export function usePoseGuide({
         if (!done && now - holdSince >= HOLD_MS) {
           done = true
           buzz(120)
-          if (voiceRef.current) speak('Got it.')
+          if (voiceRef.current) say('Got it.')
           readyRef.current()
         }
       } else {
@@ -174,7 +168,7 @@ export function usePoseGuide({
       cancelAnimationFrame(frame)
       tracker?.close()
       // Keep "Got it" audible after an automatic capture; otherwise stop talking when the camera goes.
-      if (!done) window.speechSynthesis?.cancel()
+      if (!done) stopSpeaking()
       setState({ tracker: 'loading', guidance: null, pose: null, holdSince: null })
     }
   }, [active, view, videoRef])

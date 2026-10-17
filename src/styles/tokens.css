@@ -1,36 +1,43 @@
 /* Design tokens taken from the dashboard reference (measured at 393pt phone width). */
 :root {
-  /* Colour */
-  --color-bg: #ffffff;
-  --color-bg-glow: #ffffff;
-  --color-neutral: #efefec; /* grey cards and secondary pills */
-  --color-neutral-hover: #e4e4e0;
-  --color-border: #e2e2de;
-  --color-border-strong: #c9c9c4;
-  --color-text: #0e0f0c;
-  --color-text-secondary: #454745;
-  --color-text-muted: #868685;
-  --color-accent: #9fe870; /* primary pill */
-  --color-accent-hover: #8edb5c;
-  --color-on-accent: #163300; /* text on accent, links, active tab */
-  --color-positive: #2f5711;
-  --color-negative: #a8200d;
-  --color-inverse: #2b0b10; /* dark promo card */
+  /* Colour: warm paper, one ember-orange accent. */
+  --color-bg: #f7f6f3;
+  --color-bg-glow: #f7f6f3;
+  --color-neutral: #efedea;
+  --color-neutral-hover: #e7e4e0;
+  --color-border: #e5e2de;
+  --color-border-strong: #d6d2cd;
+  --color-text: #1b1a19;
+  --color-text-secondary: #5e5a56;
+  --color-text-muted: #95908b;
+  --color-accent: #f26a2e;
+  --color-accent-hover: #f57c45;
+  --color-on-accent: #ffffff;
+  --color-positive: #1f8a4c;
+  --color-negative: #c2361c;
+  --color-inverse: #1b1a19;
   --color-on-inverse: #ffffff;
-  --color-strong: #163300; /* links, active states, selected borders */
+  --color-strong: #1b1a19;
   --color-on-strong: #ffffff;
-  --color-danger-bg: #fbe9e6;
-  --color-warning-bg: #fdf1d6;
-  --color-warning-text: #5c3d00;
-  --color-warning-strong: #3d2800;
-  --color-gap: #8a4b00;
-  --color-success-bg: #e7f6dc;
-  --color-hairline: rgb(0 0 0 / 0.08);
-  --color-backdrop: rgb(14 15 12 / 0.45);
+  --color-danger-bg: #fbe9e4;
+  --color-warning-bg: #fdf1df;
+  --color-warning-text: #6b4200;
+  --color-warning-strong: #3d2600;
+  --color-gap: #c2541c;
+  --color-success-bg: #e5f4ea;
+  --color-hairline: rgb(0 0 0 / 0.06);
+  --color-backdrop: rgb(27 26 25 / 0.4);
+  --color-surface-top: #f2f0ed;
+  --color-surface-sheen: rgb(255 255 255 / 0.6);
+  --color-tabbar: #efedea;
+  --color-tab-active: #ffffff;
+  --color-on-tab-active: #1b1a19;
+  --shadow-float: 0 12px 32px -14px rgb(60 40 20 / 0.22);
+  --shadow-tab-active: 0 2px 8px -2px rgb(60 40 20 / 0.18);
   color-scheme: light;
 
   /* Type */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Figtree', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --text-display: 800 32px/1.04 var(--font-sans);
   --text-hero: 800 44px/0.98 var(--font-sans);
   --text-eyebrow: 650 11.5px/1.2 var(--font-sans);
@@ -56,84 +63,124 @@
   --gutter: 16px;
 
   /* Shape */
-  --radius-card: 12px;
-  --radius-input: 10px;
-  --radius-btn: 12px;
+  --radius-card: 24px;
+  --radius-input: 16px;
+  --radius-btn: 999px;
   --radius-pill: 999px;
 
   /* Sizes */
   --size-avatar: 40px;
-  --size-icon-btn: 32px;
+  --size-icon-btn: 44px;
   --size-row-avatar: 48px;
-  --size-btn-sm: 32px;
-  --size-btn-lg: 48px;
-  --size-tabbar: 64px;
+  --size-btn-sm: 38px;
+  --size-btn-lg: 58px;
+  --size-tabbar: 68px;
   --size-sidebar: 240px;
 
-  --focus-ring: 0 0 0 3px var(--color-strong);
+  --focus-ring: 0 0 0 3px rgb(242 106 46 / 0.45);
 }
 
-/* Dark theme (the default): gunmetal. Near-black with a faint cool cast and steel greys, so
-   it reads as a precise instrument rather than a default dark mode. Lime stays the accent.
-   Applied when <html data-theme="dark">, or when the system is dark and no theme is forced. */
+/* Dark theme (the default): warm charcoal surfaces, one ember-orange accent, white pills for
+   the active state. Applied when <html data-theme="dark">, or when the system is dark and no
+   theme is forced. */
 :root[data-theme='dark'] {
-  --color-bg: #0b0c0f;
-  --color-bg-glow: #171a21;
-  --color-neutral: #14161b;
-  --color-neutral-hover: #1c1f26;
-  --color-border: #23262e;
-  --color-border-strong: #3a3f4a;
-  --color-text: #e8eaee;
-  --color-text-secondary: #a2a7b2;
-  --color-text-muted: #6b7180;
-  --color-accent: #9fe870;
-  --color-accent-hover: #b4f08d;
-  --color-on-accent: #10200a;
-  --color-positive: #9fe870;
-  --color-negative: #ff8f7a;
-  --color-inverse: #1a1d23;
-  --color-on-inverse: #e8eaee;
-  --color-strong: #9fe870;
-  --color-on-strong: #10200a;
-  --color-danger-bg: #2a1714;
-  --color-warning-bg: #262014;
-  --color-warning-text: #f1cf85;
-  --color-warning-strong: #ffe6ae;
-  --color-gap: #f2b766;
-  --color-success-bg: #17240f;
-  --color-hairline: rgb(255 255 255 / 0.07);
-  --color-backdrop: rgb(4 5 7 / 0.72);
+  /* Surfaces: warm charcoal, never pure black. */
+  --color-bg: #181716;
+  --color-bg-glow: #221f1d;
+  --color-neutral: #242221;
+  --color-neutral-hover: #2d2a28;
+  --color-border: #322f2d;
+  --color-border-strong: #45413e;
+  --color-text: #f6f4f2;
+  --color-text-secondary: #b3aea9;
+  --color-text-muted: #7a7571;
+  /* One accent: ember orange. */
+  --color-accent: #f0682f;
+  --color-accent-hover: #ff7a42;
+  --color-on-accent: #ffffff;
+  --color-positive: #5fd08a;
+  --color-negative: #ff7a62;
+  --color-inverse: #f6f4f2;
+  --color-on-inverse: #181716;
+  --color-strong: #f6f4f2;
+  --color-on-strong: #181716;
+  --color-danger-bg: #2c1a16;
+  --color-warning-bg: #2a2117;
+  --color-warning-text: #f3c98a;
+  --color-warning-strong: #ffe2b3;
+  --color-gap: #ff9a5c;
+  --color-success-bg: #18261c;
+  --color-hairline: rgb(255 255 255 / 0.06);
+  --color-backdrop: rgb(8 7 6 / 0.72);
+  --focus-ring: 0 0 0 3px rgb(240 104 47 / 0.55);
+  --color-surface-top: #282624;
+  --color-surface-sheen: rgb(255 255 255 / 0.04);
+  --color-tabbar: #2a2826;
+  --color-tab-active: #f6f4f2;
+  --color-on-tab-active: #181716;
+  --shadow-float: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --shadow-tab-active: none;
+
+  /* Shape and type: soft, generous, pill-led. */
+  --font-sans: 'Figtree', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --radius-card: 24px;
+  --radius-input: 16px;
+  --radius-btn: 999px;
+  --size-icon-btn: 44px;
+  --size-btn-lg: 58px;
+  --size-btn-sm: 38px;
+  --size-tabbar: 68px;
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme='system'] {
-    --color-bg: #0b0c0f;
-    --color-bg-glow: #171a21;
-    --color-neutral: #14161b;
-    --color-neutral-hover: #1c1f26;
-    --color-border: #23262e;
-    --color-border-strong: #3a3f4a;
-    --color-text: #e8eaee;
-    --color-text-secondary: #a2a7b2;
-    --color-text-muted: #6b7180;
-    --color-accent: #9fe870;
-    --color-accent-hover: #b4f08d;
-    --color-on-accent: #10200a;
-    --color-positive: #9fe870;
-    --color-negative: #ff8f7a;
-    --color-inverse: #1a1d23;
-    --color-on-inverse: #e8eaee;
-    --color-strong: #9fe870;
-    --color-on-strong: #10200a;
-    --color-danger-bg: #2a1714;
-    --color-warning-bg: #262014;
-    --color-warning-text: #f1cf85;
-    --color-warning-strong: #ffe6ae;
-    --color-gap: #f2b766;
-    --color-success-bg: #17240f;
-    --color-hairline: rgb(255 255 255 / 0.07);
-    --color-backdrop: rgb(4 5 7 / 0.72);
+    /* Surfaces: warm charcoal, never pure black. */
+    --color-bg: #181716;
+    --color-bg-glow: #221f1d;
+    --color-neutral: #242221;
+    --color-neutral-hover: #2d2a28;
+    --color-border: #322f2d;
+    --color-border-strong: #45413e;
+    --color-text: #f6f4f2;
+    --color-text-secondary: #b3aea9;
+    --color-text-muted: #7a7571;
+    /* One accent: ember orange. */
+    --color-accent: #f0682f;
+    --color-accent-hover: #ff7a42;
+    --color-on-accent: #ffffff;
+    --color-positive: #5fd08a;
+    --color-negative: #ff7a62;
+    --color-inverse: #f6f4f2;
+    --color-on-inverse: #181716;
+    --color-strong: #f6f4f2;
+    --color-on-strong: #181716;
+    --color-danger-bg: #2c1a16;
+    --color-warning-bg: #2a2117;
+    --color-warning-text: #f3c98a;
+    --color-warning-strong: #ffe2b3;
+    --color-gap: #ff9a5c;
+    --color-success-bg: #18261c;
+    --color-hairline: rgb(255 255 255 / 0.06);
+    --color-backdrop: rgb(8 7 6 / 0.72);
+    --focus-ring: 0 0 0 3px rgb(240 104 47 / 0.55);
+    --color-surface-top: #282624;
+    --color-surface-sheen: rgb(255 255 255 / 0.04);
+    --color-tabbar: #2a2826;
+    --color-tab-active: #f6f4f2;
+    --color-on-tab-active: #181716;
+    --shadow-float: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+    --shadow-tab-active: none;
+
+    /* Shape and type: soft, generous, pill-led. */
+    --font-sans: 'Figtree', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --radius-card: 24px;
+    --radius-input: 16px;
+    --radius-btn: 999px;
+    --size-icon-btn: 44px;
+    --size-btn-lg: 58px;
+    --size-btn-sm: 38px;
+    --size-tabbar: 68px;
     color-scheme: dark;
   }
 }

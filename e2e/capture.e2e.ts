@@ -191,6 +191,10 @@ async function main() {
     const page = await context.newPage()
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(String(e)))
+    // Mocked default: no Murf voice, so tests hear the browser's own voice and never call Murf.
+    await page.route('**/api/voice', (route) =>
+      route.fulfill({ status: 503, json: { error: 'The voice isn’t set up on this server.', code: 'not_configured' } }),
+    )
     // Mocked default: the hair-mask render is "not set up", so no test can spend real units.
     // Tests that exercise the measurement replace this with their own mocked render.
     await page.route('**/api/colour/hair-mask', (route) =>
@@ -372,7 +376,10 @@ async function main() {
           tracker.close = () => {}
           return tracker
         }
-        speechSynthesis.speak = (u: SpeechSynthesisUtterance) => void w.__spoken.push(u.text)
+        speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
+          w.__spoken.push(u.text)
+          setTimeout(() => u.onend?.call(u, new Event('end') as SpeechSynthesisEvent), 50)
+        }
         ;(navigator as unknown as { vibrate: (p: unknown) => boolean }).vibrate = (p: unknown) => (w.__buzzes.push(p), true)
       },
     })
@@ -627,7 +634,6 @@ async function main() {
     await input.getByText('Level 5 · Light brown').waitFor()
     await input.getByText('7.1 · Ash medium blonde').waitFor()
     await input.getByText('Level 7 · Ash').waitFor()
-    await input.getByText('+2').waitFor()
     await input.getByText('Chosen manually').waitFor()
 
     // Changing the shade from the result keeps the starting colour.
@@ -635,7 +641,8 @@ async function main() {
     await page.locator('label.option', { hasText: '3 Dark brown' }).click()
     await page.getByText('2 levels darker than your hair').waitFor()
     await page.getByRole('button', { name: 'Use 3 Dark brown' }).click()
-    await input.getByText('-2').waitFor()
+    if (!(await input.isVisible())) await page.getByText('Why this result').click()
+    await input.getByText('3 · Dark brown').waitFor()
     await input.getByText('Level 5 · Light brown').waitFor()
     await context.close()
   })
@@ -687,7 +694,21 @@ async function main() {
     await page.getByText('Predicted level 5 red-orange brown versus promised level 9 ash: 4 levels short.').waitFor()
     assert((await predicted.locator('.stat-value').innerText()).trim() === '5', 'predicted 5')
     await predicted.getByText('Estimate').waitFor()
-    await page.getByText('Get a professional opinion first').waitFor()
+    await page.getByText('This box won’t match the front').waitFor()
+
+    // The same result in plain words, read out on request.
+    const plain = page.getByLabel('In plain words')
+    await plain.getByText('you’ll likely get to about level 5').waitFor()
+    await plain.getByText('That is 4 levels darker than the picture on the box.').waitFor()
+    await page.evaluate(() => {
+      const w = window as unknown as { __said: string[] }
+      w.__said = []
+      speechSynthesis.speak = (u: SpeechSynthesisUtterance) => void w.__said.push(u.text)
+    })
+    await plain.getByRole('button', { name: 'Listen' }).click()
+    await page.waitForFunction(() =>
+      (window as unknown as { __said: string[] }).__said.some((t) => t.startsWith('Your hair is about level 4 out of 10')),
+    )
 
     await page.getByText('Why this result').click()
     await page.locator('.fold').getByRole('link', { name: 'Settings' }).click()
@@ -726,7 +747,7 @@ async function main() {
     const stat = page.getByLabel('Reveal summary').locator('.stat', { hasText: 'Predicted level' })
     assert((await stat.locator('.stat-value').innerText()).trim() === '2', 'predicted 2')
     await page.getByText('Black or very dark dye is the hardest to lighten').waitFor()
-    await page.getByText('Get a professional opinion first').waitFor()
+    await page.getByText('This box won’t match the front').waitFor()
     await context.close()
   })
 
@@ -1036,7 +1057,7 @@ async function main() {
     }
     await page.getByText('Lightening stops around level 6, where orange pigment shows.').waitFor()
     const recommendation = page.getByLabel('Recommendation')
-    await recommendation.getByText('Recommended: see a professional colourist').waitFor()
+    assert((await page.getByText(/colou?rist/i).count()) === 0, 'no colourist referral anywhere')
     await recommendation.getByText('6.1 Ash dark blonde').waitFor()
     assert((await recommendation.getByRole('button', { name: /^Use / }).count()) === 0, 'demo suggestions are read-only')
 
@@ -1068,7 +1089,7 @@ async function main() {
     await page.getByText('Demo example, not your hair.').waitFor()
 
     await page.getByRole('link', { name: 'Back to dashboard' }).click()
-    await page.getByText('Selfie with a white card').waitFor()
+    await page.getByText('One selfie · about 25 s').waitFor() // home shows no progress: the session is untouched
     const after = await page.evaluate(() => JSON.stringify(sessionStorage))
     assert(after === before, 'demo mode left the real session untouched')
     assert(apiCalls === 0, `demo mode made no API calls, got ${apiCalls}`)
@@ -1091,13 +1112,13 @@ async function main() {
   await test('dark theme by default; Light in Settings persists', async () => {
     const { page, context } = await open('/settings')
     const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor)
-    assert((await bg()) === 'rgb(11, 12, 15)', `dark background, got ${await bg()}`)
+    assert((await bg()) === 'rgb(24, 23, 22)', `dark background, got ${await bg()}`)
     await page.getByText('Light', { exact: true }).click()
-    assert((await bg()) === 'rgb(255, 255, 255)', 'light background after switching')
+    assert((await bg()) === 'rgb(247, 246, 243)', 'light background after switching')
     await page.reload()
-    assert((await bg()) === 'rgb(255, 255, 255)', 'light theme kept after reload')
+    assert((await bg()) === 'rgb(247, 246, 243)', 'light theme kept after reload')
     await page.getByText('Dark', { exact: true }).click()
-    assert((await bg()) === 'rgb(11, 12, 15)', 'back to dark')
+    assert((await bg()) === 'rgb(24, 23, 22)', 'back to dark')
     await context.close()
   })
 

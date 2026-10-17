@@ -12,6 +12,7 @@ export interface HealthResponse {
 /** Stable error codes the frontend can branch on. */
 export type ApiErrorCode =
   | 'invalid_image'
+  | 'invalid_text'
   | 'not_configured'
   | 'auth_failed'
   | 'out_of_units'

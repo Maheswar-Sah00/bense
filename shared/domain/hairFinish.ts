@@ -197,9 +197,13 @@ export function finishHair(
   if (opts.maxLiftL !== undefined) T[0] = Math.min(T[0], H[0] + Math.max(0, opts.maxLiftL))
 
   // Pixels far brighter than any hair are skin or background caught by the mask's edge.
-  const brightest = quantile(hairL, 0.995)
+  const brightest = quantile(hairL, 0.95)
+  // Light and shade stay within the hair's own range, so edge pixels that mix in a bright
+  // background can't turn into a pale rim around the hair.
+  const devLow = quantile(hairL, 0.01) - H[0]
+  const devHigh = quantile(hairL, 0.99) - H[0]
   const weight = new Float32Array(n)
-  for (let i = 0; i < n; i++) weight[i] = hairAlpha[i] * (1 - smoothstep(o.L[i], brightest + 4, brightest + 18))
+  for (let i = 0; i < n; i++) weight[i] = hairAlpha[i] * (1 - smoothstep(o.L[i], brightest + 8, brightest + 22))
   const alpha = blur(weight, width, height, 1.0 * scale)
 
   // Lighter hair shows more light-and-shade contrast than dark hair, and vice versa.
@@ -219,7 +223,10 @@ export function finishHair(
     let lg = og
     let lb = ob
     if (w > 0.002) {
-      const L = T[0] + 0.75 * gain * (shade[i] - H[0]) + 0.25 * (r.L[i] - T[0])
+      const dev = Math.min(devHigh, Math.max(devLow, shade[i] - H[0]))
+      const shaded = T[0] + 0.75 * gain * dev + 0.25 * (r.L[i] - T[0])
+      // At the soft edge YouCam's own render is cleaner; the photo's shading takes over inside.
+      const L = r.L[i] + (shaded - r.L[i]) * smoothstep(w, 0.5, 0.95)
       // Deep shadow and bright shine carry less colour, as on real hair.
       const sat = 1 - 0.45 * smoothstep(Math.abs(L - T[0]), 12, 40)
       const a = (ra[i] + 0.35 * (o.a[i] - H[1])) * sat

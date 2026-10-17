@@ -15,8 +15,10 @@ import { careTips, quantityNote } from '../../../shared/domain/careGuidance'
 import { HAIR_METRICS } from '../../../shared/domain/hairProfile'
 import { METRIC_INFO } from '../hair-analysis/ProfileCards'
 import { recommend } from '../../../shared/domain/alternatives'
-import { AlternativeShades, ProfessionalCard } from './Recommendation'
+import { AlternativeShades } from './Recommendation'
 import { Reveal } from './Reveal'
+import { PlainWords } from './PlainWords'
+import { explainResult } from '../../../shared/domain/resultExplanation'
 import { METHOD_LABELS } from './startingColour'
 
 const DYED = { yes: 'Yes', no: 'No', unsure: 'Not sure' }
@@ -40,8 +42,8 @@ const STATUS_COPY: Record<Prediction['status'], { title: string; text: string } 
     text: 'Based on your safety answers, we won’t suggest dyeing at home. This isn’t a diagnosis; please get advice first.',
   },
   'professional-recommended': {
-    title: 'Get a professional opinion first',
-    text: 'This box is unlikely to give the result on the front, and fixing it later can be hard.',
+    title: 'This box won’t match the front',
+    text: 'From your hair, this box is unlikely to give the result on the front, and fixing it later can be hard.',
   },
   'insufficient-input': null,
   estimate: null,
@@ -94,6 +96,15 @@ export default function ResultStep() {
 
       {colour.photo && <Reveal photo={colour.photo} prediction={prediction} target={input.target} startLevel={engineInput.start.level} />}
 
+      <PlainWords
+        lines={explainResult({
+          prediction,
+          startLevel: engineInput.start.level ?? null,
+          target: input.target,
+          recommendation: rec,
+        })}
+      />
+
       <StatGrid
         prediction={prediction}
         shade={{ ...shade, code: input.target.code, name: input.target.name }}
@@ -113,7 +124,7 @@ export default function ResultStep() {
 
       <GapLine prediction={prediction} />
 
-      {(rec.professional || rec.kind === 'closer-shades') && rec.kind !== 'blocked' && (
+      {rec.kind === 'closer-shades' && (
         <section aria-label="Recommendation">
           <SectionHeader
             title="Better option"
@@ -123,8 +134,7 @@ export default function ResultStep() {
               </Link>
             }
           />
-          {rec.professional && <ProfessionalCard recommendation={rec} />}
-          {rec.kind === 'closer-shades' && <AlternativeShades recommendation={rec} limit={1} />}
+          <AlternativeShades recommendation={rec} limit={1} />
         </section>
       )}
 

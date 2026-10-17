@@ -39,8 +39,9 @@ export default defineConfig({
   // Explicit config stops Vite from picking up B:/Projects/postcss.config.mjs (a Tailwind setup from another project).
   css: { postcss: { plugins: [] } },
   server: {
-    // IPv4 loopback so phone tunnels reach it: ngrok, and `adb reverse` over USB.
-    host: '127.0.0.1',
+    // Every address: IPv4 and IPv6 loopback (browsers may resolve localhost to ::1), the LAN, and
+    // the 127.0.0.1 that phone tunnels (ngrok, `adb reverse`) connect to.
+    host: true,
     // Phones open the app through an ngrok HTTPS address (the camera needs HTTPS).
     allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.app'],
     proxy: {

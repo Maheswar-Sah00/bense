@@ -63,7 +63,6 @@ describe('dye history', () => {
     expect(p.result).toMatchObject({ level: 2, levelsShort: 3, reachesTarget: false, appearance: 'little-change' })
     expect(ruleIds(p)).toContain('dye-cant-lift-dye')
     expect(warningIds(p)).toContain('black-dyed')
-    expect(actionIds(p)).toContain('see-professional')
     expect(p.status).toBe('professional-recommended')
   })
 
@@ -113,7 +112,7 @@ describe('lift limits', () => {
     const p = predict(input({ start: { level: 6 }, target: { level: 9, tone: 'golden' } }))
     expect(p.result).toMatchObject({ level: 7, levelsShort: 2, appearance: 'warmer-than-box' })
     expect(warningIds(p)).toContain('beyond-lift')
-    expect(actionIds(p)).toEqual(expect.arrayContaining(['closer-shade', 'see-professional', 'strand-test']))
+    expect(actionIds(p)).toEqual(expect.arrayContaining(['closer-shade', 'strand-test']))
     expect(p.status).toBe('professional-recommended')
   })
 
