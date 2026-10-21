@@ -64,12 +64,19 @@ export function recommend(
   if (!original.result) return { ...base, kind: 'no-box-shade', shades: [] }
   if (clean(original)) return { ...base, kind: 'on-target', shades: [] }
 
+  const start = input.start.level ?? 0
+  // Someone going darker isn't offered a box that lightens their hair instead.
+  const sameDirection = (shade: Shade) => target.level >= start || shade.level <= start
   const shades = catalogue
-    .filter((shade) => shade.id !== target.id && sameShelf(shade))
+    .filter((shade) => shade.id !== target.id && sameShelf(shade) && sameDirection(shade))
     .map((shade) => ({ shade, prediction: predict(asTarget(shade), config) }))
     .filter(({ prediction }) => clean(prediction))
-    // Lightest first (closest to what was wanted), then the closest tone.
-    .sort((a, b) => b.shade.level - a.shade.level || toneDistance(a.shade.tone, target.tone) - toneDistance(b.shade.tone, target.tone))
+    // Closest level to the one wanted first, then the closest tone.
+    .sort(
+      (a, b) =>
+        Math.abs(a.shade.level - target.level) - Math.abs(b.shade.level - target.level) ||
+        toneDistance(a.shade.tone, target.tone) - toneDistance(b.shade.tone, target.tone),
+    )
     .slice(0, limit)
     .map(({ shade, prediction }) => ({
       shade,

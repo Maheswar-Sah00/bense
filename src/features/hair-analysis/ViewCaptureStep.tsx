@@ -6,6 +6,7 @@ import { useFlow } from '../../state/FlowContext'
 import {
   ANALYSIS_VIEWS,
   METRIC_VIEWS,
+  neededViews,
   nextAnalysisView,
   type AnalysisCapture,
   type HairMetric,
@@ -38,6 +39,9 @@ export default function ViewCaptureStep() {
     navigate(next ? viewPath(next) : '/analysis/photos')
   }
 
+  // Count only the photos this hair setup needs (tied-up hair needs just the top one).
+  const needed = neededViews(analysis.hairSetup)
+  const steps = needed.includes(view) ? needed : ANALYSIS_VIEWS
   const affected = (Object.keys(METRIC_VIEWS) as HairMetric[])
     .filter((metric) => METRIC_VIEWS[metric].includes(view))
     .map((metric) => METRIC_LABELS[metric])
@@ -46,8 +50,8 @@ export default function ViewCaptureStep() {
     <div className="flow">
       <FlowHeader
         backTo="/analysis/photos"
-        step={ANALYSIS_VIEWS.indexOf(view) + 1}
-        total={ANALYSIS_VIEWS.length}
+        step={steps.indexOf(view) + 1}
+        total={steps.length}
         title={VIEW_INFO[view].label}
         subtitle={VIEW_INFO[view].instruction}
       />

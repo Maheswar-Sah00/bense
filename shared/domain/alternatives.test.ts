@@ -62,4 +62,11 @@ describe('recommend', () => {
     expect(r.shades.length).toBeGreaterThan(0)
     expect(r.shades.every((a) => a.shade.tone !== 'ash' && a.shade.level <= 7)).toBe(true)
   })
+
+  it('going darker: suggests the boxes nearest the darker level wanted, never lighter than the hair', () => {
+    const dark3 = findShade('dev-3-0-dark-brown')!
+    const r = recommend(natural(7), dark3)
+    for (const a of r.shades) expect(a.shade.level).toBeLessThanOrEqual(7)
+    if (r.shades.length) expect(r.shades[0].shade.level).toBeLessThanOrEqual(4)
+  })
 })

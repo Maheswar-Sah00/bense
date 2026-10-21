@@ -5,13 +5,13 @@ export const VIEW_INFO: Record<AnalysisView, { slug: string; label: string; inst
   front: { slug: 'front', label: 'Front', instruction: 'Look straight at the camera.' },
   left45: {
     slug: 'left-45',
-    label: 'Left side, about 45°',
-    instruction: 'Turn your head about 45° to your right.',
+    label: 'Your left side',
+    instruction: 'Turn your head about 45° to your right, so your left side faces the camera.',
   },
   right45: {
     slug: 'right-45',
-    label: 'Right side, about 45°',
-    instruction: 'Turn your head about 45° to your left.',
+    label: 'Your right side',
+    instruction: 'Turn your head about 45° to your left, so your right side faces the camera.',
   },
   top: {
     slug: 'top',

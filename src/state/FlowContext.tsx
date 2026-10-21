@@ -142,8 +142,12 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       if (state.colour.photo?.url !== photo.url) revoke(state.colour.photo)
       revokeReveal(state.colour.reveal)
       revokeMeasure(state.colour.measure)
-      // A new photo needs a new reading and render; the confirmed level stays as a starting point.
-      setState((s) => ({ ...s, colour: { ...s.colour, photo, reading: undefined, reveal: undefined, measure: undefined } }))
+      // A new photo needs a new reading and render. A level the user chose themselves still applies;
+      // one read or measured from the old photo doesn't, so it has to be confirmed again.
+      setState((s) => {
+        const starting = s.colour.starting?.method === 'manual' ? s.colour.starting : undefined
+        return { ...s, colour: { ...s.colour, photo, starting, reading: undefined, reveal: undefined, measure: undefined } }
+      })
     },
     [state.colour.photo, state.colour.reveal, state.colour.measure],
   )

@@ -13,7 +13,7 @@ export default function PhotoStep() {
     <div className="flow">
       <FlowHeader backTo="/" step={1} total={4} title="Take a selfie" />
 
-      <PhotoCapture view="colour" guide={COLOUR_GUIDE} photo={colour.photo} onConfirm={setColourPhoto} />
+      <PhotoCapture view="colour" guide={COLOUR_GUIDE} photo={colour.photo} onConfirm={setColourPhoto} poseView="selfie" />
 
       {colour.photo && (
         <Button block onClick={() => navigate('/colour/starting-colour')}>

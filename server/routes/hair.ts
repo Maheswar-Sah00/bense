@@ -1,4 +1,5 @@
-import type { FastifyPluginAsync } from 'fastify'
+import { createHash } from 'node:crypto'
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 import { HAIR_SETUPS, measurementPlan, plannedUnits, type AnalysisView } from '../../shared/domain/hairProfile'
 import type { ApiError, HairAnalysisResponse } from '../../shared/types'
@@ -49,10 +50,28 @@ export const hairRoutes: FastifyPluginAsync<HairRouteOptions> = async (app, opts
     opts.youcam ?? (opts.env.YOUCAM_API_KEY ? new YouCamClient(opts.env.YOUCAM_API_KEY, opts.env.YOUCAM_API_BASE) : null)
   const maxConcurrent = opts.maxConcurrent ?? 4
   let inFlight = 0
+  // Requests still uploading or being analysed. Checked before the (up to ~56 MB) body is read,
+  // so a burst of uploads can't fill the server's memory before the analysis limit applies.
+  let active = 0
   const analyses = new InFlight<HairAnalysisResponse>()
 
   // Four base64 photos at up to 10 MB each.
-  app.post('/hair/analysis', { bodyLimit: 4 * Math.ceil(MAX_IMAGE_BYTES * 1.4) }, async (request, reply) => {
+  const bodyLimit = 4 * Math.ceil(MAX_IMAGE_BYTES * 1.4)
+  const onRequest = (_request: FastifyRequest, reply: FastifyReply, done: () => void) => {
+    if (active >= maxConcurrent * 2) {
+      const body: ApiError = { error: 'Lots of people are analysing right now. Try again shortly.', code: 'rate_limited', retryable: true }
+      reply.code(429).send(body)
+      return
+    }
+    active++
+    let released = false
+    reply.raw.once('close', () => {
+      if (!released) active--
+      released = true
+    })
+    done()
+  }
+  app.post('/hair/analysis', { bodyLimit, onRequest }, async (request, reply) => {
     const fail = (error: ServiceError) => {
       const body: ApiError = { error: error.message, code: error.code, retryable: error.retryable }
       return reply.code(error.httpStatus).send(body)
@@ -69,7 +88,8 @@ export const hairRoutes: FastifyPluginAsync<HairRouteOptions> = async (app, opts
       const { setup, only } = parsed.data
       const units = plannedUnits(measurementPlan(setup, views, only))
       const key = InFlight.key(
-        Buffer.concat(Object.values(views).map((v) => Buffer.from(v.bytes))),
+        new Uint8Array(),
+        ...Object.values(views).map((v) => createHash('sha256').update(v.bytes).digest('hex')),
         setup,
         Object.keys(views).sort().join(','),
         only?.join(',') ?? 'all',

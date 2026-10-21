@@ -1,14 +1,15 @@
 // App-shell service worker. It caches only the app's own code, icons and the public demo
 // assets. It never caches API calls (photos, readings, renders), blob or data URLs, or
 // anything from another origin, so no private photo or temporary result link is stored.
-const CACHE = 'bense-shell-v4'
+const CACHE = 'bense-shell-v7'
 const STATIC = [
   '/',
   '/manifest.webmanifest',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-512.png',
+  // Same addresses as the manifest and index.html (?v=2 is the 本 logo).
+  '/icon.svg?v=2',
+  '/icon-192.png?v=2',
+  '/icon-512.png?v=2',
+  '/icon-maskable-512.png?v=2',
   '/demo-assets/reveal-before.jpg',
   '/demo-assets/reveal-promise.jpg',
   '/demo-assets/reveal-result.jpg',
@@ -49,29 +50,43 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return
 
   if (request.mode === 'navigate') {
-    // Network first so new builds show up; offline, every route gets the cached app shell.
+    // Network first so new builds show up; offline, on a server error, or when the network takes
+    // more than 4 s, every route gets the cached app shell. Only the app's own page is stored as
+    // the shell, never an image or file opened in the app.
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
+      (async () => {
+        const cached = await caches.match('/')
+        const network = fetch(request).then((response) => {
+          const isPage = (response.headers.get('content-type') || '').includes('text/html')
+          if (response.ok && isPage) {
             const copy = response.clone()
             caches.open(CACHE).then((cache) => cache.put('/', copy))
           }
           return response
         })
-        .catch(() => caches.match('/')),
+        const slow = new Promise((resolve) => setTimeout(resolve, 4000))
+        try {
+          const response = await (cached ? Promise.race([network, slow.then(() => cached)]) : network)
+          return response.status >= 500 && cached ? cached : response
+        } catch {
+          return cached ?? Response.error()
+        }
+      })(),
     )
     return
   }
 
-  if (isShellAsset(url.pathname)) {
+  // With the query, so the versioned icons (/icon.svg?v=2) match their STATIC entries.
+  if (isShellAsset(url.pathname + url.search)) {
     // Hashed or fixed public files: cache first, filled on demand if missing.
     event.respondWith(
       caches.match(request).then(
         (hit) =>
           hit ??
           fetch(request).then((response) => {
-            if (response.ok) {
+            // A page sent for a missing script or model (an old server) must never be stored as one.
+            const isPage = (response.headers.get('content-type') || '').includes('text/html')
+            if (response.ok && !isPage) {
               const copy = response.clone()
               caches.open(CACHE).then((cache) => cache.put(request, copy))
             }

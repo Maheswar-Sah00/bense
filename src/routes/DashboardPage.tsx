@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HAIR_LEVEL_NAMES, HAIR_LEVEL_SWATCHES, HAIR_LEVELS } from '../../shared/domain/hairLevel'
 import { findShade } from '../../shared/domain/shadeCatalogue'
+import { Logo, LogoMark } from '../components/Logo'
 import { IconLink } from '../components/ui/Button'
 import { ConfirmDialog } from '../components/ui/Dialog'
 import { Icon } from '../components/ui/Icon'
@@ -15,12 +16,12 @@ export default function DashboardPage() {
   const { colour, analysis } = flow
   const [resetOpen, setResetOpen] = useState(false)
   const { state: health } = useBackendHealth()
+  // Only a missing API key is worth a note here. A server that's briefly unreachable (often just
+  // restarting) isn't: each live step shows its own error and retry if a call actually fails.
   const liveUnavailable =
-    health.kind === 'error'
-      ? 'The server can’t be reached, so live YouCam features won’t work right now. Demo mode still works.'
-      : health.kind === 'ready' && !health.health.youcamConfigured
-        ? 'Live YouCam features aren’t set up on this server (no API key).'
-        : null
+    health.kind === 'ready' && !health.health.youcamConfigured
+      ? 'Live YouCam features aren’t set up on this server (no API key).'
+      : null
 
   // The result screen is the outcome, so the count is the three inputs before it.
   const colourInputs = COLOUR_STEPS.length - 1
@@ -50,9 +51,7 @@ export default function DashboardPage() {
   return (
     <div className="home">
       <header className="home-top">
-        <span className="mark" aria-hidden="true">
-          本
-        </span>
+        <Logo className="home-logo" title="Bense" />
         <IconLink icon="settings" label="Settings" to="/settings" />
       </header>
 
@@ -78,7 +77,9 @@ export default function DashboardPage() {
                 <span className="show-tag">Your hair</span>
               </div>
               <div className="show-face show-back">
-                <span>本</span>
+                <span>
+                  <LogoMark mono />
+                </span>
               </div>
             </div>
           </div>
@@ -89,7 +90,9 @@ export default function DashboardPage() {
                 <span className="show-tag">Box promise</span>
               </div>
               <div className="show-face show-back">
-                <span>本</span>
+                <span>
+                  <LogoMark mono />
+                </span>
               </div>
             </div>
           </div>
@@ -97,10 +100,12 @@ export default function DashboardPage() {
             <div className="show-flip">
               <div className="show-face show-front">
                 <img src="/demo-assets/reveal-result.jpg" alt="" />
-                <span className="show-tag show-tag-accent">What you’ll get</span>
+                <span className="show-tag show-tag-accent">Likely result</span>
               </div>
               <div className="show-face show-back">
-                <span>本</span>
+                <span>
+                  <LogoMark mono />
+                </span>
               </div>
             </div>
           </div>

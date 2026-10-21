@@ -23,8 +23,8 @@ export function CaptureOverlay({ kind }: { kind: OverlayKind }) {
             White card
           </text>
         )}
-        {kind === 'turn-right' && <text x="150" y="380">Turn ~45° to your right</text>}
-        {kind === 'turn-left' && <text x="150" y="380">Turn ~45° to your left</text>}
+        {kind === 'turn-right' && <text x="150" y="380">Turn about 45° to your right</text>}
+        {kind === 'turn-left' && <text x="150" y="380">Turn about 45° to your left</text>}
         {kind === 'top' && <text x="150" y="315">Tilt down · parting here</text>}
       </g>
     </svg>

@@ -36,9 +36,22 @@ function clip(text: string): Promise<string | null> {
   return pending
 }
 
-/** Fetches clips ahead of time, so instructions play the moment they're needed. */
+const waiting: string[] = []
+let preloading = 0
+
+/** Fetches clips ahead of time, two at a time, so instructions play the moment they're needed. */
 export function preloadSpeech(texts: Iterable<string>) {
-  for (const text of texts) void clip(text)
+  for (const text of texts) if (!clips.has(text) && !waiting.includes(text)) waiting.push(text)
+  const next = () => {
+    const text = waiting.shift()
+    if (!text) return
+    preloading++
+    void clip(text).finally(() => {
+      preloading--
+      next()
+    })
+  }
+  while (preloading < 2 && waiting.length) next()
 }
 
 function finish(mine: number) {

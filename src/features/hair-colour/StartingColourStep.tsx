@@ -8,6 +8,8 @@ import {
   type PreviousDye,
 } from '../../../shared/domain/hairColourReading'
 import { HAIR_LEVEL_NAMES, HAIR_LEVEL_SWATCHES, HAIR_LEVELS, type HairLevel } from '../../../shared/domain/hairLevel'
+import { isDyedLook } from '../../../shared/domain/hairLook'
+import type { LevelMeasurement } from '../../../shared/domain/hairLevelMeasure'
 import type { ColourTonesResponse, HairMaskResponse } from '../../../shared/types'
 import { FlowHeader } from '../../components/FlowHeader'
 import { Button, ButtonLink, IconButton } from '../../components/ui/Button'
@@ -53,6 +55,9 @@ export default function StartingColourStep() {
     colour.reading && colour.reading.photoId === photo?.id ? colour.reading.reading : undefined
   const measure = colour.measure && colour.measure.photoId === photo?.id ? colour.measure : undefined
   const measured = measure?.result.status === 'measured' ? measure.result : undefined
+  const look = measured?.look
+  /** The whole head is a dye colour (purple, blue…): the level is its depth, not a natural shade. */
+  const vivid = look?.kind === 'vivid'
   const previous = colour.starting
 
   const [request, setRequest] = useState<Request>({ kind: 'idle' })
@@ -68,9 +73,30 @@ export default function StartingColourStep() {
   const [failed, setFailed] = useState<Partial<Record<Part, Failure>>>({})
   const [dyed, setDyed] = useState<DyeHistory | undefined>(previous?.previouslyDyed)
   const [previousDye, setPreviousDye] = useState<PreviousDye | undefined>(previous?.previousDye)
+  // Once the user has answered the dye question, a reading never changes their answer.
+  const dyeAnswered = useRef(previous?.previouslyDyed !== undefined)
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => () => abortRef.current?.abort(), [])
+
+  // A measurement made before colours were read has no `look`: re-read it from the stored render
+  // (on this device, no YouCam units).
+  useEffect(() => {
+    if (!photo || !measure || measure.result.status !== 'measured' || measure.result.look) return
+    let live = true
+    measureFromBlobs(photo.blob, measure.maskBlob, measure.card).then(
+      (result) => {
+        if (!live) return
+        setMeasure({ ...measure, result })
+        markDyed(result)
+      },
+      () => {},
+    )
+    return () => {
+      live = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per stored measurement
+  }, [measure])
 
   if (!photo) {
     return (
@@ -94,6 +120,13 @@ export default function StartingColourStep() {
     !!familyEstimate &&
     !corrected &&
     (measured.level < familyEstimate.min || measured.level > familyEstimate.max)
+
+  /** Dye colour in the photo means the hair has been dyed: answer that for the user (they can change it). */
+  function markDyed(result: LevelMeasurement) {
+    if (dyeAnswered.current || result.status !== 'measured' || !isDyedLook(result.look)) return
+    setDyed('yes')
+    setPreviousDye('other-colour')
+  }
 
   const failure = (error: unknown, fallback: string): Failure => {
     const e = error instanceof ApiRequestError ? error : null
@@ -174,6 +207,7 @@ export default function StartingColourStep() {
       if (lightnessResult.status === 'fulfilled' && lightnessResult.value) {
         const { maskBlob, result, elapsedMs } = lightnessResult.value
         setMeasure({ photoId: photo.id, maskUrl: URL.createObjectURL(maskBlob), maskBlob, result, elapsedMs })
+        markDyed(result)
         nextMeasured = result.status === 'measured' ? result : undefined
         delete nextFailed.mask
       } else if (lightnessResult.status === 'rejected') {
@@ -201,6 +235,7 @@ export default function StartingColourStep() {
   /** Calibrating (or removing it) is an explicit choice, so the level follows the new measurement. */
   function remeasured(next: LevelMeasureState) {
     setMeasure(next)
+    markDyed(next.result)
     if (next.result.status === 'measured') setLevel(next.result.level)
   }
 
@@ -240,7 +275,12 @@ export default function StartingColourStep() {
       previousDye: dyed === 'yes' ? previousDye : undefined,
       reading,
       correctedFamily: corrected,
-      measurement: measured && { lightness: measured.lab[0], level: measured.level, calibrated: measured.calibrated },
+      measurement: measured && {
+        lightness: measured.lab[0],
+        level: measured.level,
+        calibrated: measured.calibrated,
+        look: look && { kind: look.kind, name: look.name },
+      },
     })
     navigate('/colour/shade')
   }
@@ -348,7 +388,12 @@ export default function StartingColourStep() {
                     </button>
                   </div>
                 )}
-                {disagree && (
+                {vivid ? (
+                  <p className="fine-print">
+                    YouCam’s colour families are natural shades only, so it can’t name {look.name.toLowerCase()} hair.
+                    We go by the measurement.
+                  </p>
+                ) : disagree && (
                   <p className="fine-print">
                     The name suggests level {familyEstimate!.min}–{familyEstimate!.max}; the measurement says{' '}
                     {measured!.level}. We use the measurement.
@@ -395,6 +440,7 @@ export default function StartingColourStep() {
           {measured ? (
             <p className="lead">
               Measured: level {measured.level}, likely {measured.range.min}–{measured.range.max}.
+              {vivid && ` That’s how deep your ${look.name.toLowerCase()} is.`}
             </p>
           ) : estimate ? (
             <p className="lead">
@@ -418,7 +464,8 @@ export default function StartingColourStep() {
               <div className="stepper-value">
                 <span className="stepper-swatch" style={{ background: HAIR_LEVEL_SWATCHES[level] }} />
                 <span>
-                  <strong>Level {level}</strong> · {HAIR_LEVEL_NAMES[level]}
+                  <strong>Level {level}</strong> ·{' '}
+                  {vivid ? `as deep as ${HAIR_LEVEL_NAMES[level].toLowerCase()}` : HAIR_LEVEL_NAMES[level]}
                 </span>
               </div>
               <IconButton
@@ -459,13 +506,20 @@ export default function StartingColourStep() {
                   name="dyed"
                   value={option.value}
                   checked={dyed === option.value}
-                  onChange={() => setDyed(option.value)}
+                  onChange={() => {
+                    dyeAnswered.current = true
+                    setDyed(option.value)
+                  }}
                 />
                 <span>{option.label}</span>
               </label>
             ))}
           </div>
-          <p className="fine-print field-hint">Box dye can’t lighten earlier dye, so this changes your prediction.</p>
+          <p className="fine-print field-hint">
+            {isDyedLook(look) && dyed === 'yes'
+              ? `Your photo shows ${look.colour} dye, so we’ve marked your hair as dyed.`
+              : 'Box dye can’t lighten earlier dye, so this changes your prediction.'}
+          </p>
         </fieldset>
       )}
 
@@ -479,7 +533,10 @@ export default function StartingColourStep() {
                 name="previous-dye"
                 value={option.value}
                 checked={previousDye === option.value}
-                onChange={() => setPreviousDye(option.value)}
+                onChange={() => {
+                  dyeAnswered.current = true
+                  setPreviousDye(option.value)
+                }}
               />
               <span>{option.label}</span>
             </label>

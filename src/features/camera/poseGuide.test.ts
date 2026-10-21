@@ -62,6 +62,17 @@ describe('poseGuidance', () => {
     expect(poseGuidance('front', at(0, -20)).key).toBe('chin-down')
   })
 
+  it('hair-dye selfie: straight on, level, face big enough but hair still in frame', () => {
+    const selfie = (turn: number, width: number, tilt = 8) => poseGuidance('selfie', { turn, tilt, width })
+    expect(selfie(0, 0.55).status).toBe('hold')
+    expect(selfie(0, 0.55).speech).toMatch(/card under your chin/)
+    expect(selfie(12, 0.55).text).toBe('Turn slightly to your left')
+    expect(selfie(0, 0.55, 30).key).toBe('chin-up')
+    expect(selfie(0, 0.3).key).toBe('closer')
+    expect(selfie(0, 0.85).key).toBe('farther')
+    expect(poseGuidance('selfie', null)).toMatchObject({ status: 'searching', key: 'no-face' })
+  })
+
   it('keeps side photos level and well short of a full profile, as YouCam asks', () => {
     expect(poseGuidance('left45', at(50)).key).toBe('turn-back')
     expect(poseGuidance('left45', at(35, 30)).key).toBe('chin-up')

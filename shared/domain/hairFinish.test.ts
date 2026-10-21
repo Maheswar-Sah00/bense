@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alphaFromChange, alphaFromMask, blur, finishHair, MIN_HAIR_PIXELS } from './hairFinish'
+import { alphaFromChange, alphaFromMask, blur, finishHair, MIN_HAIR_PIXELS, refineHairAlpha } from './hairFinish'
 import type { RgbaImage } from './hairLevelMeasure'
 
 const W = 40
@@ -90,5 +90,33 @@ describe('blur', () => {
     const out = blur(plane, W, H, 1.5)
     expect(out.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 4)
     expect(out[20 * W + 21]).toBeGreaterThan(0)
+  })
+})
+
+describe('refineHairAlpha', () => {
+  // 300×300: hair on the left, skin on the right, and loose strands (the same brown as the hair)
+  // crossing the skin just past the hair, which YouCam's outline left out.
+  const S = 300
+  const strand = (x: number, y: number) => x >= 150 && x < 170 && y % 6 === 0
+  const photo: RgbaImage = { width: S, height: S, data: new Uint8ClampedArray(S * S * 4), channels: 4 }
+  const outline = new Float32Array(S * S)
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const i = y * S + x
+      const rgb = x < 150 || strand(x, y) ? (y % 4 < 2 ? [120, 85, 50] : [95, 66, 40]) : [225, 180, 160]
+      photo.data.set([...rgb, 255], i * 4)
+      outline[i] = x < 150 ? 1 : 0
+    }
+  }
+  const refined = refineHairAlpha(photo, outline)
+
+  it('adds loose strands next to the hair that look like the hair', () => {
+    expect(refined[30 * S + 155]).toBeGreaterThan(0.5)
+  })
+
+  it('leaves the skin around them alone, and keeps the hair', () => {
+    expect(refined[33 * S + 155]).toBeLessThan(0.3)
+    expect(refined[30 * S + 280]).toBe(0)
+    expect(refined[30 * S + 40]).toBe(1)
   })
 })

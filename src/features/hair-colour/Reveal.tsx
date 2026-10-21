@@ -12,6 +12,7 @@ import { ApiRequestError, apiFetch } from '../../lib/api'
 import type { CapturedPhoto } from '../../state/captureSession'
 import { useFlow } from '../../state/FlowContext'
 import { revealKey } from '../../state/flow'
+import { BeforeAfter } from './BeforeAfter'
 import { useFinishedPair, type FinishSource } from './finishRender'
 
 type Request =
@@ -32,19 +33,51 @@ function demoExample(): { pair: DemoRenderPair; sentence: string; lift: number }
   return pair && { pair, sentence: revealSentence(prediction, shade), lift: prediction.result!.level - scenario.start.level }
 }
 
-export function Pair({ promise, result, alt, finish }: { promise: string; result: string; alt: string; finish?: FinishSource }) {
+export function Pair({
+  promise,
+  result,
+  alt,
+  finish,
+  beforeUrl = typeof finish?.before === 'string' ? finish.before : undefined,
+}: {
+  promise: string
+  result: string
+  alt: string
+  finish?: FinishSource
+  /** The original photo for the before/after slider; defaults to finish.before when that's a URL. */
+  beforeUrl?: string
+}) {
   const shown = useFinishedPair(promise, result, finish)
   return (
-    <div className={`reveal-grid${shown.finishing ? ' is-finishing' : ''}`} aria-busy={shown.finishing}>
-      <figure className="reveal-figure">
-        <img src={shown.promise} alt={`${alt}: what the box promises`} />
-        <figcaption>What the box promises</figcaption>
-      </figure>
-      <figure className="reveal-figure reveal-probable">
-        <img src={shown.result} alt={`${alt}: what you'll probably get`} />
-        <figcaption>What you’ll probably get</figcaption>
-      </figure>
-    </div>
+    <>
+      {beforeUrl && !shown.finishing && (
+        <BeforeAfter
+          before={beforeUrl}
+          alt={alt}
+          afters={[
+            { id: 'result', label: 'Likely result', src: shown.result },
+            { id: 'promise', label: 'Box promise', src: shown.promise },
+          ]}
+        />
+      )}
+      <div className={`reveal-grid${shown.finishing ? ' is-finishing' : ''}`} aria-busy={shown.finishing}>
+        <figure className="reveal-figure">
+          <img src={shown.promise} alt={`${alt}: what the box promises`} />
+          <figcaption>What the box promises</figcaption>
+        </figure>
+        <figure className="reveal-figure reveal-probable">
+          <img src={shown.result} alt={`${alt}: what you'll probably get`} />
+          <figcaption>What you’ll probably get</figcaption>
+        </figure>
+      </div>
+      {finish && !shown.finishing && (
+        <p className="fine-print">
+          {shown.finished
+            ? 'Finished on your phone with your photo’s own light and shade.'
+            : 'Shown as YouCam rendered it: the finishing on your phone couldn’t run for this photo.'}
+        </p>
+      )}
+    </>
   )
 }
 
@@ -119,9 +152,15 @@ export function Reveal({
 
       {renders ? (
         <>
-          <Pair promise={renders.promise.url} result={renders.result.url} alt="Your photo" finish={finish} />
+          <Pair
+            promise={renders.promise.url}
+            result={renders.result.url}
+            alt="Your photo"
+            finish={finish}
+            beforeUrl={photo.url}
+          />
           <p className="fine-print">
-            YouCam Hair Color · finished with your photo’s own light and shade · {(renders.elapsedMs / 1000).toFixed(1)} s
+            Rendered by YouCam Hair Color in {(renders.elapsedMs / 1000).toFixed(1)} s
           </p>
         </>
       ) : request.kind === 'loading' ? (

@@ -1,4 +1,5 @@
-// What to tell the user while they line up a hair-analysis photo, from their head angle.
+// What to tell the user while they line up a photo, from their head angle: the hair-dye selfie and
+// the four hair-analysis views.
 // YouCam's rules (docs/youcam-api/ai_hair_*_detection.yaml): front within 10° of straight; sides
 // "about 45 degrees", turned more than 15°, head level "with no tilting up, down, or sideways";
 // face "around 50% to 80% of the image width"; density: face the camera, then lower the head
@@ -6,6 +7,9 @@
 // were rejected, and MediaPipe reads a 90° profile as about 60°, so the side zone stays well below that.
 import type { AnalysisView } from '../../state/captureSession'
 import type { HeadPose } from './headPose'
+
+/** The four hair-analysis views, plus the hair-dye selfie (Facial Color Tones + Hair Color). */
+export type PoseView = AnalysisView | 'selfie'
 
 export type GuideStatus = 'searching' | 'adjust' | 'hold'
 
@@ -28,7 +32,11 @@ interface Range {
  * Accepted angles, in the units of `poseFromMatrix`, and the face width as a share of the frame.
  * A level head reads tilt 9–12° on YouCam's own front photos, so "level" is centred there.
  */
-export const POSE_TARGETS: Record<AnalysisView, { turn: Range; tilt: Range; width?: Range }> = {
+export const POSE_TARGETS: Record<PoseView, { turn: Range; tilt: Range; width?: Range }> = {
+  // Facing the camera with a level head, inside Facial Color Tones' 'medium' strictness (15° of
+  // pitch/yaw, server/services/colourTones.ts) with margin; close enough for a clear face, far enough
+  // that the hair at the sides stays in the photo. A level head reads tilt 9–12°.
+  selfie: { turn: { min: -8, max: 8 }, tilt: { min: -3, max: 22 }, width: { min: 0.42, max: 0.75 } },
   front: { turn: { min: -7, max: 7 }, tilt: { min: -1, max: 20 }, width: { min: 0.45, max: 0.85 } },
   left45: { turn: { min: 25, max: 45 }, tilt: { min: -2, max: 20 }, width: { min: 0.33, max: 0.85 } },
   right45: { turn: { min: -45, max: -25 }, tilt: { min: -2, max: 20 }, width: { min: 0.33, max: 0.85 } },
@@ -36,7 +44,8 @@ export const POSE_TARGETS: Record<AnalysisView, { turn: Range; tilt: Range; widt
 }
 
 /** Spoken once when the camera starts, so the user knows what to do without reading. */
-export const POSE_INTROS: Record<AnalysisView, string> = {
+export const POSE_INTROS: Record<PoseView, string> = {
+  selfie: 'Hold a white card under your chin and look straight at the camera. I’ll take the photo when you’re lined up.',
   front: 'Look straight at the camera. I’ll take the photo when you’re lined up.',
   left45: 'Turn your face about 45 degrees to your right. I’ll tell you when it’s right.',
   right45: 'Turn your face about 45 degrees to your left. I’ll tell you when it’s right.',
@@ -45,7 +54,7 @@ export const POSE_INTROS: Record<AnalysisView, string> = {
 
 const g = (status: GuideStatus, key: string, text: string, speech: string): Guidance => ({ status, key, text, speech })
 
-export function poseGuidance(view: AnalysisView, pose: HeadPose | null): Guidance {
+export function poseGuidance(view: PoseView, pose: HeadPose | null): Guidance {
   const target = POSE_TARGETS[view]
   if (!pose) {
     return view === 'top'
@@ -71,7 +80,7 @@ export function poseGuidance(view: AnalysisView, pose: HeadPose | null): Guidanc
     }
   }
 
-  if (view === 'front' && (turn < target.turn.min || turn > target.turn.max)) {
+  if ((view === 'front' || view === 'selfie') && (turn < target.turn.min || turn > target.turn.max)) {
     // turn > 0 means turned to their right, so they need to come back to their left.
     const back = turn > 0 ? 'left' : 'right'
     return g('adjust', `face-${back}`, `Turn slightly to your ${back}`, `Turn slightly to your ${back}, so you face the camera.`)
@@ -95,14 +104,16 @@ export function poseGuidance(view: AnalysisView, pose: HeadPose | null): Guidanc
     if (pose.width > target.width.max) return g('adjust', 'farther', 'Move the phone back a little', 'You’re too close. Move the phone back a little.')
   }
 
-  return g('hold', 'hold', 'Perfect. Hold still', 'Perfect. Hold still.')
+  return view === 'selfie'
+    ? g('hold', 'hold', 'Perfect. Hold still', 'Perfect. Keep the card under your chin and hold still.')
+    : g('hold', 'hold', 'Perfect. Hold still', 'Perfect. Hold still.')
 }
 
 /** The angle the gauge shows for a view: turn for the front and sides, tilt for the top. */
-export const gaugeAxis = (view: AnalysisView): 'turn' | 'tilt' => (view === 'top' ? 'tilt' : 'turn')
+export const gaugeAxis = (view: PoseView): 'turn' | 'tilt' => (view === 'top' ? 'tilt' : 'turn')
 
 /** Every line the guide can say for a view, so the voice can be fetched before the camera opens. */
-export function posePhrases(view: AnalysisView): string[] {
+export function posePhrases(view: PoseView): string[] {
   const lines = new Set([poseGuidance(view, null).speech])
   for (let turn = -80; turn <= 80; turn += 4) {
     for (let tilt = -20; tilt <= 70; tilt += 4) {

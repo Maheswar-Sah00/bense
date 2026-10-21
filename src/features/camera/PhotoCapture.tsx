@@ -2,12 +2,13 @@ import { useEffect, useReducer, useRef, useState, type ChangeEvent } from 'react
 import { Button } from '../../components/ui/Button'
 import { Icon, type IconName } from '../../components/ui/Icon'
 import { LoadingState } from '../../components/ui/States'
-import type { AnalysisView, CapturedPhoto, CaptureSource, CaptureView } from '../../state/captureSession'
+import type { CapturedPhoto, CaptureSource, CaptureView } from '../../state/captureSession'
 import { CAMERA_ISSUES } from './cameraErrors'
 import { captureReducer, type Draft } from './captureMachine'
 import { CaptureOverlay, type OverlayKind } from './CaptureOverlay'
 import { captureVideoFrame, ImageError, prepareUpload, type PreparedImage } from './imageUtils'
-import { POSE_INTROS } from './poseGuide'
+import { preloadPoseTracker } from './headPose'
+import { POSE_INTROS, type PoseView } from './poseGuide'
 import { PoseGuidePanel } from './PoseGuidePanel'
 import { useCamera, type Facing } from './useCamera'
 import { say, stopSpeaking } from '../voice/voice'
@@ -28,8 +29,8 @@ interface PhotoCaptureProps {
   photo?: CapturedPhoto
   onConfirm: (photo: CapturedPhoto) => void
   facing?: Facing
-  /** Hair-analysis views: guide the head angle live (text, voice, vibration) and take the photo when it's right. */
-  poseView?: AnalysisView
+  /** Guide the head angle live (text, voice, vibration) and take the photo itself when it's right. */
+  poseView?: PoseView
 }
 
 const newId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
@@ -89,8 +90,11 @@ export function PhotoCapture({ view, guide, photo, onConfirm, facing = 'user', p
   async function startCamera() {
     // Spoken inside the tap, which also lets iPhones speak later instructions.
     if (poseView && voice) say(POSE_INTROS[poseView])
+    // Load the face model while the camera permission prompt is up, so the guide starts at once.
+    if (poseView) preloadPoseTracker()
     dispatch({ type: 'camera-starting' })
     const issue = await startStream(facing, () => dispatch({ type: 'camera-failed', issue: 'interrupted' }))
+    if (issue === 'cancelled') return
     dispatch(issue ? { type: 'camera-failed', issue } : { type: 'camera-live' })
   }
 

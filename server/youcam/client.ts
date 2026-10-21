@@ -146,17 +146,22 @@ export class YouCamClient {
   }
 
   /**
-   * Start a task and poll it to completion. A 429 while polling is treated as "still
-   * running": the docs warn an unpolled task can still consume units, so we keep going
-   * until the overall timeout rather than abandon it.
+   * Start a task and poll it to completion. A 429, a 5xx or a dropped connection while polling
+   * is treated as "still running" (a few times in a row at most): the docs warn an unpolled task
+   * can still consume units, so one blip shouldn't abandon a task that is still working.
    */
   async runTask(endpoint: string, body: Record<string, unknown>, poll?: PollOptions): Promise<TaskResult> {
     const taskId = await this.startTask(endpoint, body)
+    let blips = 0
     return pollTask(async () => {
       try {
-        return await this.getTask(endpoint, taskId)
+        const result = await this.getTask(endpoint, taskId)
+        blips = 0
+        return result
       } catch (error) {
-        if (error instanceof YouCamError && error.status === 429) {
+        const status = error instanceof YouCamError ? error.status : undefined
+        const transient = error instanceof YouCamError && (status === 429 || status === undefined || status >= 500)
+        if (transient && (status === 429 || ++blips <= 3)) {
           return { status: 'running', taskId, engineError: null, engineErrorMessage: null, results: undefined }
         }
         throw error

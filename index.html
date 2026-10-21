@@ -8,17 +8,23 @@
       // Set the theme before first paint (see src/theme.ts). Dark unless the user chose otherwise.
       try {
         var t = localStorage.getItem('bense.theme')
-        document.documentElement.dataset.theme = t === 'light' || t === 'system' ? t : 'dark'
+        t = t === 'light' || t === 'system' ? t : 'dark'
       } catch (e) {
-        document.documentElement.dataset.theme = 'dark'
+        t = 'dark'
+      }
+      document.documentElement.dataset.theme = t
+      if (t === 'light' || (t === 'system' && !matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f6f3')
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&family=Inter:wght@400..800&display=swap" rel="stylesheet" />
     <meta name="description" content="See what a box dye will really do to your hair before you buy it." />
-    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- ?v=2: the 本 logo icons; a new address makes browsers and phones drop the old cached icon. -->
+    <link rel="icon" href="/favicon.ico?v=2" sizes="48x48" />
+    <link rel="icon" href="/icon.svg?v=2" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Bense</title>
   </head>

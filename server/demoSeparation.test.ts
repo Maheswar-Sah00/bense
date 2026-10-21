@@ -14,7 +14,8 @@ function files(dir: string): string[] {
   })
 }
 
-const importsDemo = (path: string) => /from ['"][./]*(?:\.\.\/)*shared\/demo\//.test(readFileSync(join(root, path), 'utf8'))
+// Any import path with a demo/ folder in it (../demo/…, ../../shared/demo/…).
+const importsDemo = (path: string) => /from ['"][^'"]*\bdemo\//.test(readFileSync(join(root, path), 'utf8'))
 
 describe('demo mode separation', () => {
   it.each([

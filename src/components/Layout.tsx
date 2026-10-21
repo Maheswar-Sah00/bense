@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { APP_NAME } from '../config'
+import { Logo } from './Logo'
 import { useOnline } from '../hooks/useOnline'
 import { Icon, type IconName } from './ui/Icon'
 
@@ -23,7 +24,7 @@ export default function Layout() {
   return (
     <div className="app">
       <nav className="nav" aria-label="Main">
-        <span className="nav-brand">{APP_NAME}</span>
+        <Logo className="nav-brand" title={APP_NAME} />
         {NAV.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.end} className="nav-item">
             <Icon name={item.icon} />

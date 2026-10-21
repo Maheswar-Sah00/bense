@@ -14,6 +14,7 @@
 // Ported from tests/boxtruth.py (measure_from_files); the parity test checks both agree.
 import type { Lab } from './colour'
 import { toHairLevel, type HairLevel } from './hairLevel'
+import { classifyHairLook, type HairLook } from './hairLook'
 
 export const MASK_COLOUR = '#00FF00'
 /** Render pixel counts as hair when green exceeds both red and blue by this much (harness value). */
@@ -61,6 +62,8 @@ export interface LevelMeasurement {
   levelExact: number
   level: HairLevel
   range: { min: HairLevel; max: HairLevel }
+  /** The hair's colour (natural, grey, or a dye colour), from its hue. Set when measured. */
+  look?: HairLook
   calibrated: boolean
   card?: CardSample
   notes: string[]
@@ -273,7 +276,15 @@ export function measureHairLevel(original: RgbaImage, render: RgbaImage, opts: M
   // Without a card, exposure and light colour can move L* by a level either way.
   const half = card ? 0.5 : 1
   const range = { min: toHairLevel(levelExact - half), max: toHairLevel(levelExact + half) }
+  const look = classifyHairLook(L, A, B, lab, level)
 
+  if (look.kind === 'vivid') {
+    notes.push(`${look.name} isn’t a natural hair colour, so this is dye. The level is how deep the colour is.`)
+  } else if (look.kind === 'streaks') {
+    notes.push(`About ${Math.round(look.dyedShare * 100)}% of your hair is ${look.colour}, which is dye. The level is for the rest.`)
+  } else if (look.kind === 'grey') {
+    notes.push('Grey or white hair has little pigment left. If it’s mixed with darker hair, go by the darker hair.')
+  }
   if (card) {
     notes.push('Calibrated with your white card, so the light’s colour and the camera’s exposure are corrected.')
     if (card.clipped > 0.3) notes.push('Your card is overexposed in the photo, so your hair may read a little light.')
@@ -286,5 +297,5 @@ export function measureHairLevel(original: RgbaImage, render: RgbaImage, opts: M
   }
   if (spreadL > 25) notes.push('Your hair varies a lot in lightness (roots, highlights or uneven light). We used the middle value.')
 
-  return { status: 'measured', hairPixels: count, hairShare, lab, spreadL, levelExact, level, range, calibrated: !!card, card, notes }
+  return { status: 'measured', hairPixels: count, hairShare, lab, spreadL, levelExact, level, range, look, calibrated: !!card, card, notes }
 }

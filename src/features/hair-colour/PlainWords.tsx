@@ -20,7 +20,7 @@ export function PlainWords({ lines }: { lines: string[] }) {
     <section className="panel-card plain-words" aria-label="In plain words">
       <div className="plain-words-head">
         <h2>In plain words</h2>
-        <Button variant="secondary" size="sm" icon={playing ? 'voice-off' : 'voice'} onClick={toggle} aria-pressed={playing}>
+        <Button variant="secondary" size="sm" icon={playing ? 'voice-off' : 'voice'} onClick={toggle}>
           {playing ? 'Stop' : 'Listen'}
         </Button>
       </div>

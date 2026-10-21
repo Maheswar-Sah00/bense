@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
-import { recommend } from '../../../shared/domain/alternatives'
-import { engineConfig } from '../../../shared/domain/predictionEngine'
 import { buildPredictionInput, toEngineInput } from '../../../shared/domain/predictionInput'
 import { findShade } from '../../../shared/domain/shadeCatalogue'
+import { predictWithOptions } from './prediction'
 import { FlowHeader } from '../../components/FlowHeader'
 import { ButtonLink } from '../../components/ui/Button'
 import { SectionHeader } from '../../components/ui/ListRow'
@@ -33,7 +32,7 @@ export default function AlternativesStep() {
   const { input } = built
   const shade = findShade(input.target.shadeId)!
   const engine = toEngineInput(input, safety)
-  const rec = recommend({ start: engine.start, safety: engine.safety }, shade, engineConfig({ liftLevels: settings.liftLevels }))
+  const { recommendation: rec } = predictWithOptions(engine, shade, settings.liftLevels)
   const result = rec.original.result
 
   return (
@@ -92,7 +91,11 @@ export default function AlternativesStep() {
         <Link to="/settings" className="text-link">
           change in Settings
         </Link>
-        ). Shades are illustrative demo entries ({input.catalogue.version}). Do the skin allergy test in the box
+        ).{' '}
+        {input.target.brand
+          ? `Real shades as listed on the brand’s website (${input.catalogue.version}); their colours here are modelled.`
+          : `Example shades, not real products (${input.catalogue.version}).`}{' '}
+        Do the skin allergy test in the box
         instructions before every use.
       </p>
 

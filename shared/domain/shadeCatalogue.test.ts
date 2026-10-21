@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import raw from '../catalogue/shades.dev.json' with { type: 'json' }
-import { CATALOGUE, findShade, modelTargetHex, parseCatalogue, SHADES, shadeLimitations, TONE_FAMILIES } from './shadeCatalogue'
+import rawBrands from '../catalogue/shades.brands.json' with { type: 'json' }
+import { parseBrandCatalogue, parseCatalogue } from './catalogueSchema'
+import { CATALOGUE, findShade, modelTargetHex, SHADES, shadeLimitations, TONE_FAMILIES } from './shadeCatalogue'
 
 const EXAMPLES = SHADES.filter((s) => !s.brand)
 const REAL = SHADES.filter((s) => s.brand)
+
+describe('shipped catalogue data', () => {
+  it('passes validation: real products on their own, then merged with the examples', () => {
+    const brands = parseBrandCatalogue(rawBrands)
+    expect(() => parseCatalogue({ ...raw, groups: [...raw.groups, ...brands.groups], shades: [...raw.shades, ...brands.shades] })).not.toThrow()
+    expect(CATALOGUE.shades.length).toBe(raw.shades.length + brands.shades.length)
+  })
+})
 
 describe('shade catalogue data', () => {
   it('marks example shades illustrative, and every entry has provenance', () => {
@@ -47,11 +57,12 @@ describe('shade catalogue data', () => {
     }
   })
 
-  it('real products name their brand page, check date and how level and tone were read', () => {
+  it('real products are anonymised, with a check date and how level and tone were read', () => {
     expect(REAL.length).toBeGreaterThan(150)
-    expect(new Set(REAL.map((s) => s.brand!.name)).size).toBe(2) // L’Oréal Paris and Garnier
+    expect(new Set(REAL.map((s) => s.brand!.name))).toEqual(new Set(['Brand A', 'Brand B']))
     for (const shade of REAL) {
-      expect(shade.brand!.url, shade.id).toMatch(/^https:\/\/(www\.)?(lorealparisusa\.com|lorealparis\.co\.in|garnierusa\.com|garnier\.in)\//)
+      expect(shade.brand!.range, shade.id).toMatch(/^Range \d+$/)
+      expect(JSON.stringify(shade), shade.id).not.toMatch(/garnier|or[eé]al|https?:/i)
       expect(shade.brand!.checkedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       expect(shade.provenance).toMatch(/^Real product listed on the brand’s website\. Level from .+; tone from .+/)
       expect(shade.productLimitations).toEqual([])

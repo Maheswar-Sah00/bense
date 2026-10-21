@@ -29,6 +29,8 @@ export interface PredictionInput {
     method: LevelMethod
     /** Colour family from the reading, or the user's correction. */
     family: HairColourName | null
+    /** A dye colour seen in the photo ("Purple", "Dark brown with pink streaks"), if any. */
+    dyeColour?: string
   }
   target: {
     shadeId: string
@@ -51,6 +53,11 @@ export type PredictionInputResult =
   | { ok: true; input: PredictionInput }
   | { ok: false; reason: 'missing-starting' | 'missing-shade' | 'unknown-shade'; shadeId?: string }
 
+function dyeColourOf(starting: StartingColour): string | undefined {
+  const look = starting.measurement?.look
+  return look && (look.kind === 'vivid' || look.kind === 'streaks') ? look.name : undefined
+}
+
 export function buildPredictionInput(
   starting: StartingColour | undefined,
   shadeId: string | undefined,
@@ -69,6 +76,7 @@ export function buildPredictionInput(
         previousDye: starting.previouslyDyed === 'yes' ? starting.previousDye : undefined,
         method: starting.method,
         family: starting.correctedFamily ?? starting.reading?.family ?? null,
+        dyeColour: dyeColourOf(starting),
       },
       target: {
         shadeId: shade.id,
@@ -98,6 +106,7 @@ export function toEngineInput(input: PredictionInput, safety: SafetyAnswers): En
       family: input.starting.family,
       previouslyDyed: input.starting.previouslyDyed,
       previousDye: input.starting.previousDye,
+      dyeColour: input.starting.dyeColour,
     },
     target: {
       level: input.target.level,

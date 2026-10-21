@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkFile, fitWithin, MAX_FILE_BYTES, readJpegOrientation } from './imageUtils'
+import { checkFile, fitWithin, MAX_FILE_BYTES, readJpegOrientation, stripJpegMetadata } from './imageUtils'
 
 /** Minimal JPEG header with an EXIF APP1 segment holding one orientation tag. */
 function jpegWithOrientation(orientation: number, littleEndian = false): Uint8Array {
@@ -60,5 +60,22 @@ describe('fitWithin', () => {
 
   it('never upscales small images', () => {
     expect(fitWithin(640, 480)).toEqual({ width: 640, height: 480 })
+  })
+})
+
+describe('stripJpegMetadata', () => {
+  // SOI, APP0 (JFIF, kept), APP1 "Exif" (dropped), SOS + data, EOI.
+  const app0 = [0xff, 0xe0, 0x00, 0x06, 0x4a, 0x46, 0x49, 0x46]
+  const exif = [0xff, 0xe1, 0x00, 0x08, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00]
+  const scan = [0xff, 0xda, 0x00, 0x02, 0x11, 0x22, 0xff, 0xd9]
+  const jpeg = new Uint8Array([0xff, 0xd8, ...app0, ...exif, ...scan])
+
+  it('removes EXIF/XMP blocks and keeps everything else byte for byte', () => {
+    expect([...stripJpegMetadata(jpeg)!]).toEqual([0xff, 0xd8, ...app0, ...scan])
+  })
+
+  it('refuses anything that isn’t a well-formed JPEG header', () => {
+    expect(stripJpegMetadata(new Uint8Array([1, 2, 3, 4]))).toBeNull()
+    expect(stripJpegMetadata(new Uint8Array([0xff, 0xd8, 0xff, 0xe1, 0x40, 0x00]))).toBeNull()
   })
 })

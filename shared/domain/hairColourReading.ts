@@ -2,6 +2,7 @@
 // starting colour. Facial Color Tones returns a colour *family* (one of six names, with one
 // of seven fixed swatch hexes), never a measured 1–10 level, so levels here are ranges.
 import type { HairLevel } from './hairLevel'
+import type { HairLookKind } from './hairLook'
 
 export const HAIR_COLOUR_NAMES = ['Black', 'Brown', 'Auburn', 'Red', 'Blonde', 'Grey/White'] as const
 export type HairColourName = (typeof HAIR_COLOUR_NAMES)[number]
@@ -124,5 +125,11 @@ export interface StartingColour {
   /** Family the user chose when the reading was wrong. */
   correctedFamily?: HairColourName
   /** Summary of the lightness measurement, when one was made (numbers only, no image). */
-  measurement?: { lightness: number; level: HairLevel; calibrated: boolean }
+  measurement?: {
+    lightness: number
+    level: HairLevel
+    calibrated: boolean
+    /** The colour read from the photo, e.g. "Purple" (kind 'vivid') or "Dark brown with blue streaks". */
+    look?: { kind: HairLookKind; name: string }
+  }
 }

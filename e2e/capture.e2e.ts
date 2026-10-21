@@ -107,8 +107,9 @@ const srgbL = (rgb: [number, number, number]) =>
  */
 const HAIR_TRUE: [number, number, number] = [0x66, 0x45, 0x2e]
 const CARD_TRUE: [number, number, number] = [245, 245, 245]
-async function makeHairScene(page: Page) {
-  const hair = underLight(HAIR_TRUE)
+/** A selfie with a white card, under a dim warm light. `dyed` paints the hair that colour instead, in plain light. */
+async function makeHairScene(page: Page, dyed?: [number, number, number]) {
+  const hair = dyed ?? underLight(HAIR_TRUE)
   const card = underLight(CARD_TRUE)
   const [photo, mask] = await page.evaluate(
     ([h, c]) =>
@@ -215,6 +216,9 @@ async function main() {
     await page.getByRole('button', { name: 'Use camera' }).click()
     await waitPhase(page, 'live')
     assert(await page.locator('video').evaluate((v: HTMLVideoElement) => v.videoWidth > 0), 'video is playing')
+    // The hair-dye selfie gets the same live guide as the hair-profile photos: voice, then auto-capture.
+    await page.locator('.pose-guide').waitFor()
+    await page.getByRole('button', { name: 'Voice guide' }).waitFor()
     await page.getByRole('button', { name: 'Take photo' }).click()
     await waitPhase(page, 'review')
     const firstDraft = await page.locator('.capture img').getAttribute('src')
@@ -523,6 +527,48 @@ async function main() {
     await context.close()
   })
 
+  await test('measured level: purple hair reads as purple dye (not brown), and is marked dyed', async () => {
+    const { page, context, errors } = await open('/colour/photo')
+    const scene = await makeHairScene(page, [122, 42, 143])
+    // Facial Color Tones only knows natural shades: on the live purple photo it said "Blonde".
+    const blonde = {
+      ...liveReading,
+      apiHairColorName: 'Blonde',
+      apiHairColorHex: '#faf0be',
+      normalizedHex: '#FAF0BE',
+      family: 'Blonde' as const,
+      levelEstimate: { min: 7 as const, max: 10 as const, suggested: 8 as const },
+    }
+    await page.route('**/api/colour/tones', (route) => route.fulfill({ json: { reading: blonde, elapsedMs: 1 } }))
+    await page.route('**/api/colour/hair-mask', (route) =>
+      route.fulfill({ json: { mask: { image: scene.mask, colour: '#00FF00', colorIntensity: 100 }, elapsedMs: 1 } }),
+    )
+    await upload(page, 'selfie.jpg', 'image/jpeg', scene.photo)
+    await waitPhase(page, 'review')
+    await page.getByRole('button', { name: 'Use this photo' }).click()
+    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByRole('button', { name: 'Read my hair colour' }).click()
+
+    const card = page.getByRole('region', { name: 'Hair level measurement' })
+    await card.getByText('Purple isn’t a natural hair colour, so this is dye.', { exact: false }).waitFor()
+    const name = (await card.locator('.reading-name').innerText()).trim()
+    assert(name === `Level ${scene.uncalibratedLevel} · Purple`, `named by its colour, got "${name}"`)
+    await page.getByText('YouCam’s colour families are natural shades only, so it can’t name purple hair.', { exact: false }).waitFor()
+    await page.getByText('That’s how deep your purple is.', { exact: false }).waitFor()
+    // Purple can't be natural, so the dye question is answered (and can still be changed).
+    assert(await page.getByRole('radio', { name: 'Yes' }).isChecked(), 'dyed: yes')
+    assert(await page.getByRole('radio', { name: 'Another colour' }).isChecked(), 'earlier dye: another colour')
+    await page.getByText('Your photo shows purple dye, so we’ve marked your hair as dyed.').waitFor()
+
+    await page.getByRole('button', { name: `Confirm level ${scene.uncalibratedLevel}` }).click()
+    await page.waitForURL('**/colour/shade')
+    await page.locator('label.option', { hasText: '9.1 Very light ash blonde' }).click()
+    await page.getByRole('button', { name: 'Use 9.1 Very light ash blonde' }).click()
+    await page.getByText('Your photo shows purple hair.', { exact: false }).first().waitFor()
+    assert(errors.length === 0, `no page errors: ${errors}`)
+    await context.close()
+  })
+
   await test('measured level: the mask failing still leaves the colour reading, with its own retry', async () => {
     const { page, context } = await open('/colour/photo')
     let maskCalls = 0
@@ -694,7 +740,7 @@ async function main() {
     await page.getByText('Predicted level 5 red-orange brown versus promised level 9 ash: 4 levels short.').waitFor()
     assert((await predicted.locator('.stat-value').innerText()).trim() === '5', 'predicted 5')
     await predicted.getByText('Estimate').waitFor()
-    await page.getByText('This box won’t match the front').waitFor()
+    await page.getByText('This box won’t look like the picture').waitFor()
 
     // The same result in plain words, read out on request.
     const plain = page.getByLabel('In plain words')
@@ -747,7 +793,7 @@ async function main() {
     const stat = page.getByLabel('Reveal summary').locator('.stat', { hasText: 'Predicted level' })
     assert((await stat.locator('.stat-value').innerText()).trim() === '2', 'predicted 2')
     await page.getByText('Black or very dark dye is the hardest to lighten').waitFor()
-    await page.getByText('This box won’t match the front').waitFor()
+    await page.getByText('This box won’t look like the picture').waitFor()
     await context.close()
   })
 

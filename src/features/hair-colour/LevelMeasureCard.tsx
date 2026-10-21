@@ -60,15 +60,17 @@ export function LevelMeasureCard({
         <div>
           <span className="reading-label">Measured from your photo</span>
           <span className="reading-name">
-            {m.status === 'measured' ? `Level ${m.level} · ${HAIR_LEVEL_NAMES[m.level]}` : 'Not enough hair found'}
+            {m.status === 'measured'
+              ? `Level ${m.level} · ${m.look?.name ?? HAIR_LEVEL_NAMES[m.level]}`
+              : 'Not enough hair found'}
           </span>
         </div>
       </div>
 
       {m.status === 'measured' && (
         <p className="measure-figures">
-          Lightness L* {m.lab[0].toFixed(1)}, the median of {m.hairPixels.toLocaleString('en')} hair pixels. Likely
-          range: level {m.range.min}
+          Measured across {m.hairPixels.toLocaleString('en')} points of your hair (lightness {m.lab[0].toFixed(1)} out of
+          100). Likely range: level {m.range.min}
           {m.range.max > m.range.min ? `–${m.range.max}` : ''}.
         </p>
       )}

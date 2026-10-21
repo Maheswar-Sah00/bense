@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { HAIR_LEVEL_NAMES, HAIR_LEVEL_SWATCHES } from '../../../shared/domain/hairLevel'
-import { engineConfig, predict, type Prediction, type SafetyAnswers } from '../../../shared/domain/predictionEngine'
+import type { Prediction, SafetyAnswers } from '../../../shared/domain/predictionEngine'
 import { buildPredictionInput, toEngineInput } from '../../../shared/domain/predictionInput'
 import { findShade, TONE_LABELS } from '../../../shared/domain/shadeCatalogue'
 import { FlowHeader } from '../../components/FlowHeader'
@@ -14,7 +14,7 @@ import { colourResumePath } from '../../state/flow'
 import { careTips, quantityNote } from '../../../shared/domain/careGuidance'
 import { HAIR_METRICS } from '../../../shared/domain/hairProfile'
 import { METRIC_INFO } from '../hair-analysis/ProfileCards'
-import { recommend } from '../../../shared/domain/alternatives'
+import { predictWithOptions } from './prediction'
 import { AlternativeShades } from './Recommendation'
 import { Reveal } from './Reveal'
 import { PlainWords } from './PlainWords'
@@ -42,8 +42,8 @@ const STATUS_COPY: Record<Prediction['status'], { title: string; text: string } 
     text: 'Based on your safety answers, we won’t suggest dyeing at home. This isn’t a diagnosis; please get advice first.',
   },
   'professional-recommended': {
-    title: 'This box won’t match the front',
-    text: 'From your hair, this box is unlikely to give the result on the front, and fixing it later can be hard.',
+    title: 'This box won’t look like the picture',
+    text: 'On your hair, this box is unlikely to give the colour shown on the box, and fixing it later can be hard.',
   },
   'insufficient-input': null,
   estimate: null,
@@ -78,9 +78,7 @@ export default function ResultStep() {
   const { input } = built
   const shade = findShade(input.target.shadeId)!
   const engineInput = toEngineInput(input, safety)
-  const config = engineConfig({ liftLevels: settings.liftLevels })
-  const prediction = predict(engineInput, config)
-  const rec = recommend({ start: engineInput.start, safety: engineInput.safety }, shade, config)
+  const { prediction, recommendation: rec } = predictWithOptions(engineInput, shade, settings.liftLevels)
   const status = STATUS_COPY[prediction.status]
 
   return (

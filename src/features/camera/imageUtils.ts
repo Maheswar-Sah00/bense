@@ -64,6 +64,37 @@ export function fitWithin(width: number, height: number, maxSide = MAX_UPLOAD_SI
 }
 
 /** EXIF orientation (1–8) of a JPEG, or 1 when there is none. Reads only the header bytes. */
+/**
+ * The same JPEG without its APP1 blocks (EXIF and XMP), which can hold GPS location, the camera
+ * and the time. The picture data and colour profile are untouched. Returns null if it isn't a
+ * well-formed JPEG header.
+ */
+export function stripJpegMetadata(bytes: Uint8Array): Uint8Array | null {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  if (view.byteLength < 4 || view.getUint16(0) !== 0xffd8) return null
+  const keep: Uint8Array[] = [bytes.subarray(0, 2)]
+  let offset = 2
+  while (offset + 4 <= view.byteLength) {
+    if (view.getUint8(offset) !== 0xff) return null
+    const marker = view.getUint8(offset + 1)
+    if (marker === 0xda) {
+      keep.push(bytes.subarray(offset)) // image data to the end
+      const out = new Uint8Array(keep.reduce((n, part) => n + part.byteLength, 0))
+      let at = 0
+      for (const part of keep) {
+        out.set(part, at)
+        at += part.byteLength
+      }
+      return out
+    }
+    const end = offset + 2 + view.getUint16(offset + 2)
+    if (end > view.byteLength) return null
+    if (marker !== 0xe1) keep.push(bytes.subarray(offset, end))
+    offset = end
+  }
+  return null
+}
+
 export function readJpegOrientation(bytes: Uint8Array): number {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   if (view.byteLength < 4 || view.getUint16(0) !== 0xffd8) return 1
@@ -132,10 +163,12 @@ export async function prepareUpload(file: File): Promise<PreparedImage> {
     const { width, height } = bitmap // already upright
     if (Math.min(width, height) < MIN_SHORT_SIDE) throw new ImageError('too-small')
 
-    // Already an upright, small-enough JPEG: keep the original bytes and colour profile as-is.
+    // Already an upright, small-enough JPEG: keep the picture and colour profile as they are, but
+    // drop the EXIF/XMP blocks (location, camera, time) before it can be sent anywhere.
     if (type === 'image/jpeg' && Math.max(width, height) <= MAX_UPLOAD_SIDE) {
-      const header = new Uint8Array(await file.slice(0, 128 * 1024).arrayBuffer())
-      if (readJpegOrientation(header) === 1) return { blob: file, width, height }
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      const clean = readJpegOrientation(bytes.subarray(0, 128 * 1024)) === 1 ? stripJpegMetadata(bytes) : null
+      if (clean) return { blob: new Blob([clean as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' }), width, height }
     }
 
     const size = fitWithin(width, height)

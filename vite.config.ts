@@ -1,5 +1,6 @@
-import { copyFileSync, createReadStream, mkdirSync } from 'node:fs'
+import { copyFileSync, createReadStream, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib'
 import { defineConfig } from 'vitest/config'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -34,8 +35,35 @@ function mediapipeWasm(): Plugin {
   }
 }
 
+/** Writes .br and .gz copies of the build's text and WASM files; the server sends them to browsers that accept them. */
+function precompress(): Plugin {
+  let outDir = 'dist'
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? walk(join(dir, name)) : [join(dir, name)]))
+  return {
+    name: 'precompress',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir)
+    },
+    closeBundle() {
+      for (const path of walk(outDir)) {
+        if (!/\.(js|css|html|json|webmanifest|svg|wasm|task)$/.test(path)) continue
+        const body = readFileSync(path)
+        if (body.byteLength < 1024) continue
+        // Highest brotli quality is slow on the 11.7 MB WASM, so big files use 9.
+        const quality = body.byteLength > 1_000_000 ? 9 : 11
+        const br = brotliCompressSync(body, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } })
+        const gz = gzipSync(body, { level: 9 })
+        if (br.byteLength < body.byteLength * 0.9) writeFileSync(path + '.br', br)
+        if (gz.byteLength < body.byteLength * 0.9) writeFileSync(path + '.gz', gz)
+      }
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), mediapipeWasm()],
+  plugins: [react(), mediapipeWasm(), precompress()],
   // Explicit config stops Vite from picking up B:/Projects/postcss.config.mjs (a Tailwind setup from another project).
   css: { postcss: { plugins: [] } },
   server: {

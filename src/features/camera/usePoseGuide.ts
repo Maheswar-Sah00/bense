@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import type { AnalysisView } from '../../state/captureSession'
 import { createPoseTracker, type HeadPose, type PoseTracker } from './headPose'
 import { isSpeaking, preloadSpeech, say, stopSpeaking } from '../voice/voice'
-import { POSE_INTROS, poseGuidance, posePhrases, type Guidance } from './poseGuide'
+import { POSE_INTROS, poseGuidance, posePhrases, type Guidance, type PoseView } from './poseGuide'
 
 export interface PoseGuideState {
   tracker: 'loading' | 'ready' | 'unavailable'
@@ -58,7 +57,7 @@ export function usePoseGuide({
   onReady,
 }: {
   videoRef: RefObject<HTMLVideoElement | null>
-  view: AnalysisView | undefined
+  view: PoseView | undefined
   active: boolean
   voice: boolean
   onReady: () => void
@@ -80,6 +79,7 @@ export function usePoseGuide({
     let lastRun = 0
     let smooth: HeadPose | null = null
     let missed = 0
+    let failures = 0
     let candidate = ''
     let candidateSince = 0
     let spoken = ''
@@ -97,8 +97,16 @@ export function usePoseGuide({
       let pose: HeadPose | null
       try {
         pose = tracker.detect(video, now)
+        failures = 0
       } catch {
         pose = null
+        // A model that loaded but can't run here fails on every frame: say the guide is
+        // unavailable instead of asking for a face forever.
+        if (++failures >= 10) {
+          cancelAnimationFrame(frame)
+          setState((prev) => ({ ...prev, tracker: 'unavailable', guidance: null }))
+          return
+        }
       }
       if (pose) {
         missed = 0

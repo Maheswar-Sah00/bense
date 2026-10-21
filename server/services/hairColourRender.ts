@@ -85,6 +85,10 @@ function toServiceError(error: unknown): ServiceError {
 
 /** Download a result while its 2-hour URL is still valid, and check it really is an image. */
 async function download(url: string, fetchImpl: typeof fetch): Promise<{ bytes: Buffer; type: ImageType }> {
+  // Result links are YouCam's own presigned https URLs; anything else isn't fetched.
+  if (!url.startsWith('https://')) {
+    throw new ServiceError('invalid_response', 502, 'The rendering service returned an unexpected link.', true)
+  }
   let res: Response
   try {
     res = await fetchImpl(url, { signal: AbortSignal.timeout(30_000) })
@@ -95,6 +99,9 @@ async function download(url: string, fetchImpl: typeof fetch): Promise<{ bytes: 
     throw new ServiceError('render_expired', 502, 'The rendered image link expired before we could fetch it. Try again.', true)
   }
   if (!res.ok) throw new ServiceError('upstream_unavailable', 502, 'The rendered image couldn’t be downloaded.', true)
+  if (Number(res.headers.get('content-length') ?? 0) > MAX_RESULT_BYTES) {
+    throw new ServiceError('invalid_response', 502, 'The rendered image was empty or too large.', true)
+  }
   const bytes = Buffer.from(await res.arrayBuffer())
   if (bytes.byteLength === 0 || bytes.byteLength > MAX_RESULT_BYTES) {
     throw new ServiceError('invalid_response', 502, 'The rendered image was empty or too large.', true)

@@ -1,9 +1,9 @@
 import { Icon } from '../../components/ui/Icon'
-import type { AnalysisView } from '../../state/captureSession'
-import { gaugeAxis, POSE_TARGETS } from './poseGuide'
+import { gaugeAxis, POSE_TARGETS, type PoseView } from './poseGuide'
 import { HOLD_MS, type PoseGuideState } from './usePoseGuide'
 
-const AIM: Record<AnalysisView, string> = {
+const AIM: Record<PoseView, string> = {
+  selfie: 'turn · aim for the green zone',
   front: 'turn · aim for the green zone',
   left45: 'turn · aim for the green zone',
   right45: 'turn · aim for the green zone',
@@ -17,7 +17,7 @@ export function PoseGuidePanel({
   voice,
   onVoiceChange,
 }: {
-  view: AnalysisView
+  view: PoseView
   state: PoseGuideState
   voice: boolean
   onVoiceChange: (on: boolean) => void

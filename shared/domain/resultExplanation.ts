@@ -95,7 +95,11 @@ export function explainResult({ prediction, startLevel, target, recommendation }
   if (recommendation.professional) {
     lines.push(`If you really want ${target.name.toLowerCase()}, see a hair colourist. They can lighten your hair safely first.`)
   } else if (recommendation.kind === 'on-target') {
-    lines.push('This box looks like a good fit for your hair.')
+    lines.push(
+      has('safety-unanswered')
+        ? 'For your hair colour, this box looks like a good fit. Please go through the safety check below before you decide.'
+        : 'This box looks like a good fit for your hair.',
+    )
   }
 
   lines.push('This is an estimate, not a promise. Always do the skin test from the box 48 hours before you dye.')

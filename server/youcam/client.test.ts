@@ -43,6 +43,23 @@ describe('YouCamClient (mocked)', () => {
     expect(result.status).toBe('success')
   })
 
+  it('keeps polling through a brief 502 or dropped connection, but gives up if it keeps failing', async () => {
+    const blip = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json({ data: { task_id: 't1' } }))
+      .mockResolvedValueOnce(json({ status: 502, error: 'Bad gateway' }, 502))
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce(json({ data: { task_status: 'success', results: {} } }))
+    expect((await new YouCamClient('k', 'https://api.test', blip).runTask('x', {}, noSleep)).status).toBe('success')
+
+    const down = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(json({ data: { task_id: 't1' } }))
+      .mockResolvedValue(json({ status: 503, error: 'Unavailable' }, 503))
+    const error = await new YouCamClient('k', 'https://api.test', down).runTask('x', {}, noSleep).catch((e) => e)
+    expect(error).toMatchObject({ status: 503 })
+  })
+
   it('parses documented error bodies', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()

@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/bense-logo-dark.svg">
+    <img src="docs/brand/bense-logo-light.svg" alt="Bense" width="300">
+  </picture>
+</p>
+
 # Bense (本色): see what a box of hair dye will really do
 
 **One selfie. Your real hair level. The box's honest result.**
@@ -27,8 +34,9 @@ Built for the Perfect Corp **YouCam API hackathon, edition 2** (submissions clos
 13. [Tests](#13-tests)
 14. [Honest limits](#14-honest-limits)
 15. [What's next](#15-whats-next)
-16. [Project map](#16-project-map)
-17. [Sources](#17-sources)
+16. [The logo](#16-the-logo)
+17. [Project map](#17-project-map)
+18. [Sources](#18-sources)
 
 ---
 
@@ -391,13 +399,74 @@ A test also checks that demo data can never leak into a live result.
 
 ---
 
-## 16. Project map
+## 16. The logo
+
+![The Bense logo: lockups on dark and light, app icons, and what each part means](docs/brand/brand-sheet.png)
+
+**What it is.** The mark is the character 本, the first half of 本色 ("your own true colour"), rebuilt from straight strokes that are all the same width. 本 is 木, a tree, with one more stroke that marks its root. In our mark the root is the one stroke in ember orange. Next to it, the word **bense** is set in lowercase.
+
+**Why we chose it**
+
+- **The root is the product.** Whether a box dye works depends on the hair you start with: your real colour, at the root. Bense reads that first, and the orange root says so in one stroke.
+- **Promise and reality are in the name.** "bense" has two e's. The first is heavy: the bold shade printed on the box. The last is a hairline: the honest result you'll actually get. The gap between them is the gap Bense shows you.
+- **It isn't another beauty logo.** No hair swooshes, droplets, faces or script fonts. And no paint brush, because "dye is not paint" is the whole point of the app.
+- **It's built like the tools we admire.** Like Cursor, Linear or Vercel: one simple shape, one colour plus one accent, and still clear as a 16 px browser icon.
+- **It speaks the app's language.** The same charcoal, paper and ember as the app's dark theme, so the icon, the home screen and this page feel like one product.
+
+**How we picked it.** We looked at three directions:
+
+| Direction | What it showed | Verdict |
+|---|---|---|
+| **本 with an orange root** | The name, plus "we measure your real hair first" | **Chosen.** A meaning no other app can claim, and clear at any size |
+| A 1–10 level stripe with your level lit up | The hair level scale | Clear, but looks like a data tool, not a brand |
+| Two overlapping swatches, one solid, one see-through | "Dye is see-through, not paint" | True, but close to many colour apps already |
+
+**How it's built**
+
+| Part | Detail |
+|---|---|
+| Strokes | All one width. The mark is 6 strokes wide and about 6.3 tall |
+| Crossbar | Two arms that rise 8.6° toward the stem, like a shallow roof |
+| Legs | 42° below horizontal, with square-cut ends |
+| Root | As wide as the stem, with a pointed top that runs parallel to the legs and a small gap below them |
+| Wordmark | Montserrat SemiBold for "bens" and Montserrat Thin for the last "e" ([SIL Open Font License](https://openfontlicense.org)), turned into outlines so no font has to load |
+
+**Colours**
+
+| Name | Hex | Used for |
+|---|---|---|
+| Charcoal | `#181716` | Dark backgrounds; the strokes on light backgrounds |
+| Paper | `#F6F4F2` | Light backgrounds; the strokes on dark backgrounds |
+| Ember | `#F0682F` | The root, and only the root |
+
+**Using it**
+
+- On dark backgrounds: paper strokes, ember root. On light backgrounds: charcoal strokes, ember root.
+- On a coloured background, or when printing in one colour: the mono version, with the root in the same colour as the rest.
+- Leave at least one stroke width of empty space around the mark. Smallest sizes: 16 px for the mark, 80 px wide for the mark with the word.
+- Don't stretch it, recolour the root, or add shadows, outlines or gradients.
+
+**Where it lives**
+
+| File | Used for |
+|---|---|
+| [`docs/brand/bense-logo-dark.svg`](docs/brand/bense-logo-dark.svg), [`-light.svg`](docs/brand/bense-logo-light.svg) | Mark with the word: the top of this README, slides, the video |
+| [`docs/brand/bense-mark-*.svg`](docs/brand/) | The mark alone: dark, light, mono black, mono white |
+| [`docs/brand/bense-icon-dark.svg`](docs/brand/bense-icon-dark.svg), [`-light.svg`](docs/brand/bense-icon-light.svg) | App icon tiles |
+| [`public/icon.svg`](public/icon.svg) | Browser tab icon |
+| `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` | The installed app on Android. The maskable one keeps the mark inside the safe circle, so no launcher crops it |
+| `public/apple-touch-icon.png` | iPhone home screen |
+| [`src/components/Logo.tsx`](src/components/Logo.tsx) | Inside the app: home screen header, desktop sidebar, and the backs of the demo cards. It uses the text colour, so it follows light and dark themes |
+
+---
+
+## 17. Project map
 
 ```
 bense/
 ├── README.md                 ← you are here
 ├── LICENSE                   ← MIT
-├── src/                      ← phone app (React): screens, camera, head-angle guide, finishing worker
+├── src/                      ← phone app (React): screens, camera, head-angle guide, finishing worker, logo
 ├── server/                   ← Fastify server: YouCam client, routes, live smoke scripts
 ├── shared/
 │   ├── domain/               ← rules engine, level measurement, natural finishing, care tips
@@ -406,6 +475,7 @@ bense/
 ├── e2e/                      ← browser tests and live walkthrough scripts
 ├── public/                   ← icons, demo images, MediaPipe model
 └── docs/
+    ├── brand/                ← the logo: SVGs for every use, and the brand sheet
     ├── diagrams/             ← the diagrams above, as .png and editable .excalidraw
     ├── images/               ← screenshots and the before/after figure
     ├── submission/           ← Devpost text, video script, gallery plan, evidence and research
@@ -416,7 +486,7 @@ The diagrams are real Excalidraw files: open any `docs/diagrams/*.excalidraw` at
 
 ---
 
-## 17. Sources
+## 18. Sources
 
 **Dye rules and safety:** [Garnier USA](https://www.garnierusa.com/en/hair-color-needs/new-to-hair-color) · [The Shade](https://the-shade.helpscoutdocs.com/article/52-how-light-can-i-colour-my-hair) · [Open Exam Prep](https://open-exam-prep.com/study-guides/tx-barber/haircoloring/color-formulation-correction) · [CurlCentric, green tones](https://www.curlcentric.com/why-is-my-hair-turning-green-when-i-dye-it/) · [CurlCentric, box dye](https://www.curlcentric.com/why-do-hairdressers-hate-box-dye/) · [Revlon Professional](https://cdn.revlonprofessional.com/blog/correct-black-box-dyed-hair) · [Wella](https://www.wella.com/professional/en-GB/blog/hair-colour/differences-between-semi-and-demi-permanent-hair-color) · [FDA, hair dyes](https://www.fda.gov/cosmetics/cosmetic-products/hair-dyes) · [NHS, hair dye reactions](https://www.nhs.uk/conditions/hair-dye-reactions/)
 

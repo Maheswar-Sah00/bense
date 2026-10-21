@@ -27,6 +27,8 @@ export interface EngineInput {
     family?: HairColourName | null
     previouslyDyed: DyeHistory
     previousDye?: PreviousDye
+    /** A dye colour seen in the photo ("Purple", "Dark brown with pink streaks"). */
+    dyeColour?: string
   }
   target: {
     level: HairLevel
@@ -288,6 +290,16 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
   if (start.family === 'Grey/White') {
     uncertainty.push('Grey or white hair takes dye differently and has no single natural level.')
   }
+  if (start.dyeColour) {
+    const colour = start.dyeColour.toLowerCase()
+    warnings.push({
+      id: 'vivid-base',
+      severity: 'caution',
+      text: `Your photo shows ${colour} hair. Box dye goes on top of that colour rather than replacing it, so it can show through or turn the result muddy. Do a strand test first.`,
+      sourceIds: ['theshade-dyed'],
+    })
+    uncertainty.push(`The ${colour} already in your hair will mix with the box colour, so the result is harder to predict.`)
+  }
 
   // ---- Estimate the level reached.
   let level: HairLevel
@@ -434,10 +446,13 @@ export function predict(input: EngineInput, config: EngineConfig = DEFAULT_ENGIN
       })
     }
     const reachable = clampLevel(Math.min(10, dyedFor ? startLevel : startLevel + lift))
-    actions.push({
-      id: 'closer-shade',
-      text: `Choose a box closer to your hair, around level ${reachable}, for a result nearer the picture.`,
-    })
+    // After a safety stop, no box is suggested at all.
+    if (!blocked) {
+      actions.push({
+        id: 'closer-shade',
+        text: `Choose a box closer to your hair, around level ${reachable}, for a result nearer the picture.`,
+      })
+    }
   }
   if (!blocked && (lightening || lightenedBase || start.previouslyDyed !== 'no')) {
     actions.push({ id: 'strand-test', text: 'Do a strand test on a hidden section to see the real result.' })

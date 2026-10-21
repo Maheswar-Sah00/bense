@@ -1,5 +1,5 @@
 // Runs the hair finishing off the main thread (about half a second per image on a laptop).
-import { alphaFromChange, alphaFromMask, finishHair } from '../../../shared/domain/hairFinish'
+import { alphaFromChange, alphaFromMask, finishHair, refineHairAlpha } from '../../../shared/domain/hairFinish'
 import type { RgbaImage } from '../../../shared/domain/hairLevelMeasure'
 
 export interface FinishRequest {
@@ -19,15 +19,12 @@ export interface FinishResponse {
 self.onmessage = (event: MessageEvent<FinishRequest>) => {
   const { before, promise, result, mask, resultMaxLiftL } = event.data
   try {
-    let alpha: Float32Array
-    if (mask) {
-      alpha = alphaFromMask(mask)
-    } else {
-      // No mask render for this photo: the hair is where either render changed it.
-      alpha = alphaFromChange(before, promise)
-      const other = alphaFromChange(before, result)
-      for (let i = 0; i < alpha.length; i++) alpha[i] = Math.max(alpha[i], other[i])
-    }
+    // The hair is where the mask render turned green or either render changed the photo,
+    // grown to the loose strands YouCam missed.
+    const outline = [alphaFromChange(before, promise), alphaFromChange(before, result)]
+    if (mask) outline.push(alphaFromMask(mask))
+    const union = outline[0].map((v, i) => Math.max(v, outline[1][i], outline[2]?.[i] ?? 0))
+    const alpha = refineHairAlpha(before, union)
     const response: FinishResponse = {
       promise: finishHair(before, promise, alpha)?.image ?? null,
       result: finishHair(before, result, alpha, { maxLiftL: resultMaxLiftL })?.image ?? null,

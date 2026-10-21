@@ -6,7 +6,7 @@ export interface HeadPose {
   turn: number
   /** Degrees. Positive: the head is tilted down. */
   tilt: number
-  /** Face width as a share of the frame width (0–1), which is also the uploaded photo's width. */
+  /** Face width as a share of the visible preview's width (0–1): what the user sees in the oval. */
   width?: number
 }
 
@@ -35,21 +35,13 @@ export async function createPoseTracker(): Promise<PoseTracker> {
   // Browser tests have no real face in their fake camera, so they supply the angles instead.
   const fake = (globalThis as { __benseFakePoseTracker?: () => PoseTracker }).__benseFakePoseTracker
   if (fake) return fake()
-  const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
-  const files = await FilesetResolver.forVisionTasks('/mediapipe/wasm')
-  const options = (delegate: 'GPU' | 'CPU') => ({
-    baseOptions: { modelAssetPath: '/mediapipe/face_landmarker.task', delegate },
-    runningMode: 'VIDEO' as const,
-    numFaces: 1,
-    outputFacialTransformationMatrixes: true,
-  })
-  const landmarker = await FaceLandmarker.createFromOptions(files, options('GPU')).catch(() =>
-    FaceLandmarker.createFromOptions(files, options('CPU')),
-  )
+  const landmarker = await loadLandmarker()
   return {
     detect(video, timestamp) {
       if (video.readyState < 2 || !video.videoWidth) return null
-      const result = landmarker.detectForVideo(video, timestamp)
+      // VIDEO mode needs rising timestamps across every screen that shares the landmarker.
+      lastTimestamp = Math.max(timestamp, lastTimestamp + 1)
+      const result = landmarker.detectForVideo(video, lastTimestamp)
       const matrix = result.facialTransformationMatrixes?.[0]
       const points = result.faceLandmarks?.[0]
       if (!matrix || !points) return null
@@ -59,8 +51,52 @@ export async function createPoseTracker(): Promise<PoseTracker> {
         min = Math.min(min, p.x)
         max = Math.max(max, p.x)
       }
-      return { ...poseFromMatrix(matrix.data), width: max - min }
+      return { ...poseFromMatrix(matrix.data), width: (max - min) / visibleWidthShare(video) }
     },
-    close: () => landmarker.close(),
+    // The shared landmarker stays loaded for the next photo.
+    close: () => {},
   }
+}
+
+type Landmarker = import('@mediapipe/tasks-vision').FaceLandmarker
+
+// One landmarker for the whole visit: setting it up (and its GPU context) takes 0.5–2 s, and every
+// photo of the hair profile and each retake would otherwise pay that again.
+let shared: Promise<Landmarker> | null = null
+let lastTimestamp = 0
+
+function loadLandmarker(): Promise<Landmarker> {
+  shared ??= (async () => {
+    const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
+    const files = await FilesetResolver.forVisionTasks('/mediapipe/wasm')
+    const options = (delegate: 'GPU' | 'CPU') => ({
+      baseOptions: { modelAssetPath: '/mediapipe/face_landmarker.task', delegate },
+      runningMode: 'VIDEO' as const,
+      numFaces: 1,
+      outputFacialTransformationMatrixes: true,
+    })
+    return FaceLandmarker.createFromOptions(files, options('GPU')).catch(() =>
+      FaceLandmarker.createFromOptions(files, options('CPU')),
+    )
+  })().catch((error: unknown) => {
+    shared = null // a later screen can try again
+    throw error
+  })
+  return shared
+}
+
+/** Starts downloading and setting up the face model early, e.g. while the camera intro is showing. */
+export function preloadPoseTracker() {
+  if ((globalThis as { __benseFakePoseTracker?: unknown }).__benseFakePoseTracker) return
+  void loadLandmarker().catch(() => {})
+}
+
+/**
+ * Share of the video's width the user actually sees: the preview fills its box with
+ * `object-fit: cover`, so a landscape camera in a portrait oval shows only the middle.
+ */
+function visibleWidthShare(video: HTMLVideoElement): number {
+  const box = video.clientWidth / video.clientHeight
+  const frame = video.videoWidth / video.videoHeight
+  return box > 0 && frame > 0 ? Math.min(1, box / frame) : 1
 }

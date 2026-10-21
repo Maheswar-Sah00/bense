@@ -53,6 +53,19 @@ describe('example: natural level 4 → 9.1 ash blonde', () => {
 })
 
 describe('dye history', () => {
+  it('purple hair read from the photo: warns the colour will show through, never treated as brown', () => {
+    const p = predict(
+      input({
+        start: { level: 4, method: 'measured', family: 'Blonde', previouslyDyed: 'yes', previousDye: 'other-colour', dyeColour: 'Purple' },
+        target: { level: 4, tone: 'neutral', code: '4', name: 'Medium brown', targetHex: '#4E3626' },
+      }),
+    )
+    expect(p.warnings.find((w) => w.id === 'vivid-base')!.text).toMatch(/shows purple hair.*show through or turn the result muddy/)
+    expect(p.uncertainty.reasons.some((r) => r.includes('purple'))).toBe(true)
+    expect(actionIds(p)).toContain('strand-test')
+    expect(warningIds(predict(input({})))).not.toContain('vivid-base')
+  })
+
   it('previously black-dyed hair targeting lighter brown: no lift promised, professional advised', () => {
     const p = predict(
       input({
@@ -192,5 +205,11 @@ describe('config', () => {
 
   it('is deterministic', () => {
     expect(predict(input({}))).toEqual(predict(input({})))
+  })
+
+  it('after a safety stop, never suggests choosing another box', () => {
+    const p = predict(input({ safety: { previousReaction: true, blackHenna: false, browsOrLashes: false } }))
+    expect(p.status).toBe('blocked')
+    expect(p.actions.map((a) => a.id)).not.toContain('closer-shade')
   })
 })

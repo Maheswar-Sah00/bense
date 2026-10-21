@@ -146,7 +146,7 @@ export default function ShadeStep() {
             </ChipRow>
           )}
           <p className="fine-print" title={BRAND_CATALOGUE.notice}>
-            Real shades. {brand} is a trademark of its owner; Bense isn’t affiliated.
+            Real shades on sale, with brand and product names left out.
           </p>
         </>
       ) : (
@@ -233,11 +233,7 @@ export default function ShadeStep() {
             <p className="fine-print">
               {selected.brand ? (
                 <>
-                  {selected.brand.name} {selected.brand.range} · {MARKETS[selected.brand.market]} ·{' '}
-                  <a href={selected.brand.url} target="_blank" rel="noreferrer" className="source-link">
-                    Product page
-                  </a>
-                  . Swatch is modelled.
+                  {selected.brand.name} {selected.brand.range} · {MARKETS[selected.brand.market]}. Swatch is modelled.
                 </>
               ) : (
                 <>Example shade. Swatch is modelled.</>

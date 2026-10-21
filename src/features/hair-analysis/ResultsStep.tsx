@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { CARE_DISCLAIMER, careTips } from '../../../shared/domain/careGuidance'
 import {
   HAIR_METRICS,
@@ -65,8 +65,9 @@ async function buildViews(analysis: AnalysisCapture, only?: HairMetric[]): Promi
 export default function ResultsStep() {
   const { analysis, colour, setHairProfile } = useFlow()
   const [request, setRequest] = useState<Request>({ kind: 'idle' })
+  // Not aborted when the page closes: the analysis may already have used YouCam units, so it
+  // finishes and is saved to the session, ready when the user comes back.
   const abortRef = useRef<AbortController | null>(null)
-  useEffect(() => () => abortRef.current?.abort(), [])
 
   const key = profileKey(analysis)
   const stored = analysis.profile
@@ -206,9 +207,11 @@ export default function ResultsStep() {
                 </p>
               )}
               <div className="button-row">
-                <Button size="sm" icon="sparkle" onClick={() => analyse(failed)}>
-                  Try failed measurements again
-                </Button>
+                {!(request.kind === 'error' && !request.retryable) && (
+                  <Button size="sm" icon="sparkle" onClick={() => analyse(failed)}>
+                    Try failed measurements again
+                  </Button>
+                )}
                 <ButtonLink size="sm" variant="secondary" to="/analysis/photos">
                   Retake photos
                 </ButtonLink>

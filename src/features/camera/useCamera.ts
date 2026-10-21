@@ -11,8 +11,11 @@ export function useCamera() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const mountedRef = useRef(false)
+  // Each start() or stop() starts a new attempt; a camera that opens for an older one is closed.
+  const attemptRef = useRef(0)
 
   const stop = useCallback(() => {
+    attemptRef.current++
     streamRef.current?.getTracks().forEach((track) => track.stop())
     streamRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
@@ -26,12 +29,13 @@ export function useCamera() {
     }
   }, [stop])
 
-  /** Ask for the camera and attach it to the video element. Resolves to an issue, or null when live. */
+  /** Ask for the camera and attach it to the video element. Resolves to an issue, 'cancelled', or null when live. */
   const start = useCallback(
-    async (facing: Facing, onInterrupted: () => void): Promise<CameraIssue | null> => {
+    async (facing: Facing, onInterrupted: () => void): Promise<CameraIssue | 'cancelled' | null> => {
       const unsupported = cameraSupportIssue()
       if (unsupported) return unsupported
       stop()
+      const attempt = attemptRef.current
 
       let stream: MediaStream
       try {
@@ -44,6 +48,11 @@ export function useCamera() {
       }
 
       const video = videoRef.current
+      // Cancelled (or started again) while the camera was opening: this stream isn't wanted.
+      if (attempt !== attemptRef.current) {
+        stream.getTracks().forEach((track) => track.stop())
+        return 'cancelled'
+      }
       if (!mountedRef.current || !video) {
         stream.getTracks().forEach((track) => track.stop())
         return mountedRef.current ? 'unknown' : null

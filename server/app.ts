@@ -24,7 +24,8 @@ export function buildApp(env: Env, deps: AppDeps = {}) {
 
   const sendStatic = deps.staticDir ? staticSender(deps.staticDir) : null
   app.setNotFoundHandler((request, reply) => {
-    if (sendStatic && request.method === 'GET' && !request.url.startsWith('/api/')) return sendStatic(request.url, reply)
+    const read = request.method === 'GET' || request.method === 'HEAD'
+    if (sendStatic && read && !request.url.startsWith('/api/')) return sendStatic(request, reply)
     const body: ApiError = { error: `No route for ${request.method} ${request.url}`, code: 'not_found' }
     reply.code(404).send(body)
   })
@@ -32,8 +33,9 @@ export function buildApp(env: Env, deps: AppDeps = {}) {
   app.setErrorHandler<Error & { statusCode?: number }>((error, request, reply) => {
     const status = error.statusCode && error.statusCode < 500 ? error.statusCode : 500
     if (status === 500) request.log.error(error)
+    const photoRoute = /^\/api\/(colour|hair)\//.test(request.url)
     const body: ApiError =
-      status === 413 || status === 415
+      photoRoute && (status === 413 || status === 415)
         ? { error: 'Send one JPEG or PNG photo under 10 MB.', code: 'invalid_image' }
         : { error: status === 500 ? 'Internal server error' : error.message, code: status === 500 ? 'internal' : undefined }
     reply.code(status).send(body)

@@ -50,18 +50,30 @@ async function encode(image: RgbaImage): Promise<string> {
   return URL.createObjectURL(blob)
 }
 
-function runWorker(request: FinishRequest): Promise<FinishResponse> {
+/** Runs the finishing in a worker; aborting stops it at once. The pixel buffers are handed over, not copied. */
+function runWorker(request: FinishRequest, signal?: AbortSignal): Promise<FinishResponse> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('./finishWorker.ts', import.meta.url), { type: 'module' })
-    worker.onmessage = (event: MessageEvent<FinishResponse>) => {
+    const done = () => {
       worker.terminate()
+      signal?.removeEventListener('abort', abort)
+    }
+    const abort = () => {
+      done()
+      reject(new DOMException('Finishing was cancelled.', 'AbortError'))
+    }
+    if (signal?.aborted) return abort()
+    signal?.addEventListener('abort', abort)
+    worker.onmessage = (event: MessageEvent<FinishResponse>) => {
+      done()
       resolve(event.data)
     }
     worker.onerror = (event) => {
-      worker.terminate()
+      done()
       reject(new Error(event.message))
     }
-    worker.postMessage(request)
+    const images = [request.before, request.promise, request.result, request.mask].filter((img) => !!img)
+    worker.postMessage(request, images.map((img) => img.data.buffer as ArrayBuffer))
   })
 }
 
@@ -72,6 +84,7 @@ export async function finishPair(
   source: FinishSource,
   promise: string,
   result: string,
+  signal?: AbortSignal,
 ): Promise<{ promise: string | null; result: string | null }> {
   const maps = await Promise.all([bitmap(source.before), bitmap(promise), bitmap(result), source.mask ? bitmap(source.mask) : null])
   const [b, p, r, m] = maps
@@ -86,7 +99,7 @@ export async function finishPair(
       result: pixels(r, width, height),
       mask: m ? pixels(m, width, height) : undefined,
       resultMaxLiftL: source.resultLiftLevels === undefined ? undefined : liftToLightness(source.resultLiftLevels),
-    })
+    }, signal)
     return {
       promise: response.promise ? await encode(response.promise) : null,
       result: response.result ? await encode(response.result) : null,
@@ -105,7 +118,8 @@ export function useFinishedPair(promise: string, result: string, source?: Finish
     if (!source) return
     let cancelled = false
     const made: string[] = []
-    finishPair(source, promise, result)
+    const controller = new AbortController()
+    finishPair(source, promise, result, controller.signal)
       .then((out) => {
         for (const url of [out.promise, out.result]) if (url) made.push(url)
         if (cancelled) made.forEach((url) => URL.revokeObjectURL(url))
@@ -116,6 +130,7 @@ export function useFinishedPair(promise: string, result: string, source?: Finish
       })
     return () => {
       cancelled = true
+      controller.abort()
       made.forEach((url) => URL.revokeObjectURL(url))
     }
     // The key captures every input that changes the output.
@@ -127,5 +142,7 @@ export function useFinishedPair(promise: string, result: string, source?: Finish
     promise: current?.promise ?? promise,
     result: current?.result ?? result,
     finishing: !!source && !current?.done,
+    /** Both pictures were finished on the device (not just YouCam's raw renders). */
+    finished: !!current?.promise && !!current?.result,
   }
 }
